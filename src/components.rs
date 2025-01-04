@@ -1,6 +1,6 @@
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use crate::{MOVE_TIMEOUT, SNAKE_Z};
+use crate::{SNAKE_MOVE_TIMEOUT, SNAKE_Z};
 
 pub enum Direction {
     UP,
@@ -19,7 +19,7 @@ impl GlobalGameState {
     pub fn new(direction: Direction) -> Self {
         Self { 
             direction,
-            move_timer: Timer::new(MOVE_TIMEOUT, TimerMode::Repeating)
+            move_timer: Timer::new(SNAKE_MOVE_TIMEOUT, TimerMode::Repeating)
         }
     }
 
@@ -52,6 +52,33 @@ impl SegmentBundle {
             mesh,
             material,
             transform: Transform::from_xyz(segment_pos.x, segment_pos.y, SNAKE_Z),
+        }
+    }
+}
+
+#[derive(Component)]
+pub struct Food {}
+
+impl Food {
+    fn new() -> Self {
+        Self {}
+    }
+}
+#[derive(Bundle)]
+pub struct FoodBundle {
+    food: Food,
+    mesh: Mesh2d,
+    transform: Transform,
+    material: MeshMaterial2d<ColorMaterial>,
+}
+
+impl FoodBundle {
+    pub fn new(mesh: Mesh2d, material: MeshMaterial2d<ColorMaterial>, position: Vec2) -> Self {
+        Self {
+            food: Food::new(),
+            mesh,
+            material,
+            transform: Transform::from_xyz(position.x, position.y, SNAKE_Z),
         }
     }
 }
