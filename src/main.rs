@@ -31,7 +31,7 @@ const SNAKE_COLOR: Color = Color::srgba(85. / 255., 85. / 255., 85. / 255., 1.0)
 const SNAKE_SIZE: f32 = CELL_SIZE * 0.8;
 pub const SNAKE_MOVE_TIMEOUT: Duration = Duration::from_millis(200);
 
-const FOOD_COLOR: Color = Color::srgba(0. / 255., 255. / 255., 0. / 255., 1.0);
+const FOOD_COLOR: Color = Color::srgba(4. / 255., 12. / 255., 239. / 255., 1.0);
 const FOOD_RADIUS: f32 = CELL_SIZE * 0.4;
 
 
@@ -92,12 +92,7 @@ fn setup_snake(
     }
 
     // spawning snake
-    let snake_mesh = Mesh2d(meshes.add(Rectangle::new(SNAKE_SIZE, SNAKE_SIZE)));
-    let snake_material = MeshMaterial2d(materials.add(SNAKE_COLOR));
-
-    let snake = SegmentBundle::from_single_segment(snake_mesh, snake_material, vec2(0.0, 0.0));
-
-    commands.spawn(snake);
+    spawn_snake_segment(&mut commands, &mut meshes, &mut materials, vec2(0.0, 0.0));
 
     // spawn some food
     let food_mesh = Mesh2d(meshes.add(Circle::new(FOOD_RADIUS)));
@@ -108,6 +103,20 @@ fn setup_snake(
 
     // initializing game state
     commands.spawn((GlobalGameState::new(Direction::RIGHT),));
+}
+
+fn spawn_snake_segment(
+    mut commands: &mut Commands,
+    mut meshes: &mut ResMut<Assets<Mesh>>,
+    mut materials: &mut ResMut<Assets<ColorMaterial>>,
+    position: Vec2,
+) {
+    let snake_mesh = Mesh2d(meshes.add(Rectangle::new(SNAKE_SIZE, SNAKE_SIZE)));
+    let snake_material = MeshMaterial2d(materials.add(SNAKE_COLOR));
+
+    let snake = SegmentBundle::from_single_segment(snake_mesh, snake_material, vec2(0.0, 0.0));
+
+    commands.spawn(snake);
 }
 
 fn random_food_position() -> Vec2 {
@@ -126,6 +135,9 @@ fn move_snecko(
     // we don't want mutable access to current direction but we get it anyway :(
     mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>,
     mut food_q: Query<&mut Transform, (With<Food>, Without<SnakeSegment>)>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let mut global_state = global_game_state_q.get_single_mut().unwrap();
 
@@ -156,6 +168,7 @@ fn move_snecko(
         let food_grid_cell = food_transform.translation.div(CELL_SIZE).floor().truncate();
         let snake_head_grid_cell = segment.translation.div(CELL_SIZE).floor().truncate();
         if food_grid_cell == snake_head_grid_cell {
+            spawn_snake_segment(&mut commands, &mut meshes, &mut materials, vec2(0.0, 0.0));
             let new_food_position = random_food_position();
             food_transform.translation.x = new_food_position.x;
             food_transform.translation.y = new_food_position.y;

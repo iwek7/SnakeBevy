@@ -22,15 +22,26 @@ impl GlobalGameState {
             move_timer: Timer::new(SNAKE_MOVE_TIMEOUT, TimerMode::Repeating)
         }
     }
-
 }
 
 #[derive(Component)]
-pub struct SnakeSegment {}
+pub struct SnakeSegment {
+    index: i32,
+    segment_in_front: Option<Entity>
+}
 
 impl SnakeSegment {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(index: i32, segment_in_front: Entity) -> Self {
+        Self {
+            index,
+            segment_in_front: Some(segment_in_front)
+        }
+    }
+    pub fn new_head() -> Self {
+        Self {
+            segment_in_front: None,
+            index: 0,
+        }
     }
 }
 #[derive(Bundle)]
@@ -39,6 +50,7 @@ pub struct SegmentBundle {
     mesh: Mesh2d,
     transform: Transform,
     material: MeshMaterial2d<ColorMaterial>,
+
 }
 
 impl SegmentBundle {
@@ -48,7 +60,7 @@ impl SegmentBundle {
         segment_pos: Vec2,
     ) -> SegmentBundle {
         SegmentBundle {
-            marker: SnakeSegment::new(),
+            marker: SnakeSegment::new_head(),
             mesh,
             material,
             transform: Transform::from_xyz(segment_pos.x, segment_pos.y, SNAKE_Z),
