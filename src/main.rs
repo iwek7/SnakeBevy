@@ -142,6 +142,15 @@ fn random_food_position() -> Vec2 {
     )
 }
 
+fn is_inside_map_bounds(position: Vec2) -> bool {
+    let half_grid_size_x = GRID_SIZE[0] as f32 / 2.0 * CELL_SIZE;
+    let half_grid_size_y = GRID_SIZE[1] as f32 / 2.0 * CELL_SIZE;
+    position.x > -half_grid_size_x
+        && position.x < half_grid_size_x
+        && position.y > -half_grid_size_y
+        && position.y < half_grid_size_y
+}
+
 fn move_snecko(
     time: Res<Time>,
     mut snake_segments_q: Query<
@@ -159,10 +168,9 @@ fn move_snecko(
 
     global_state.move_timer.tick(time.delta());
     if global_state.move_timer.finished() {
-
         let mut snake_segments_vec = snake_segments_q.iter_mut().collect::<Vec<_>>();
         // sorted from the back of the snecko
-        snake_segments_vec.sort_by_key(|(_, segment)| segment.index);
+        snake_segments_vec.sort_by_key(|(_, segment)| -segment.index);
 
         for i in 0..snake_segments_vec.len() {
             let (current_slice, next_slice) = snake_segments_vec.split_at_mut(i + 1);
@@ -190,14 +198,8 @@ fn move_snecko(
                         segment_transform.translation.y,
                     ),
                 };
-                // check if inside the map
-                let half_grid_size_x = GRID_SIZE[0] as f32 / 2.0 * CELL_SIZE;
-                let half_grid_size_y = GRID_SIZE[1] as f32 / 2.0 * CELL_SIZE;
-                if new_position.x > -half_grid_size_x
-                    && new_position.x < half_grid_size_x
-                    && new_position.y > -half_grid_size_y
-                    && new_position.y < half_grid_size_y
-                {
+
+                if is_inside_map_bounds(new_position) {
                     segment_transform.translation.x = new_position.x;
                     segment_transform.translation.y = new_position.y;
                 }
@@ -226,10 +228,8 @@ fn move_snecko(
                 global_state.move_timer.reset();
             } else {
                 if segment.move_delay > 0 {
-                    println!("123123!");
                     segment.move_delay -= 1;
                 } else if let Some((next_transform, _)) = next_slice.first() {
-                    println!("moving the rest!");
                     segment_transform.translation.x = next_transform.translation.x;
                     segment_transform.translation.y = next_transform.translation.y;
                 }
@@ -253,22 +253,4 @@ fn handle_turn_left(mut global_game_state_q: Query<&mut GlobalGameState, With<Gl
 
 fn handle_turn_right(mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>) {
     global_game_state_q.get_single_mut().unwrap().direction = Direction::RIGHT;
-}
-
-fn draw_gizmos(mut gizmos: Gizmos) {
-    let grid_root = [
-        -(GRID_SIZE[0] as f32 / 2.0) * CELL_SIZE,
-        -(GRID_SIZE[1] as f32 / 2.0) * CELL_SIZE,
-    ];
-
-    let grid_end = [-grid_root[0], -grid_root[1]];
-
-    for row in 0..GRID_SIZE[0] {
-        let row_y = grid_root[0] + row as f32 * CELL_SIZE;
-        gizmos.line_2d(vec2(grid_root[0], row_y), vec2(grid_end[0], row_y), BLACK);
-        for col in 0..GRID_SIZE[1] {
-            let col_x = grid_root[1] + col as f32 * CELL_SIZE;
-            gizmos.line_2d(vec2(col_x, grid_root[1]), vec2(col_x, grid_end[1]), BLACK);
-        }
-    }
 }
