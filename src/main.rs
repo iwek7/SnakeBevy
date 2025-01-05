@@ -15,7 +15,7 @@ use bevy::prelude::*;
 use rand::Rng;
 
 // palette https://html-color.codes/grey
-const GRID_SIZE: [i32; 2] = [21, 21];
+const GRID_SIZE: [i32; 2] = [5, 5];
 
 const CELL_SIZE: f32 = 50.0;
 
@@ -102,7 +102,11 @@ fn setup_snake(
     let food_mesh = Mesh2d(meshes.add(Circle::new(FOOD_RADIUS)));
     let food_material = MeshMaterial2d(materials.add(FOOD_COLOR));
 
-    let food = FoodBundle::new(food_mesh, food_material, random_food_position());
+    let food = FoodBundle::new(
+        food_mesh,
+        food_material,
+        get_new_food_position(vec![vec2(0.0, 0.0)], None).unwrap(),
+    );
     commands.spawn(food);
 
     // initializing game state
@@ -130,18 +134,53 @@ fn spawn_snake_segment(
     commands.spawn(snake);
 }
 
-fn random_food_position() -> Vec2 {
-    let random_cell_x = rand::thread_rng().gen_range(0..GRID_SIZE[0]);
-    let random_cell_y = rand::thread_rng().gen_range(0..GRID_SIZE[1]);
+// when false is returned there is no more place to spawn food
+fn get_new_food_position(
+    snake_segments_positions: Vec<Vec2>,
+    current_food_position: Option<Vec2>,
+) -> Option<Vec2> {
+    let mut grid = [false; (GRID_SIZE[0] * GRID_SIZE[1]) as usize];
 
-    vec2(
-        random_cell_x as f32 * CELL_SIZE - (GRID_SIZE[0] as f32 / 2.0 * CELL_SIZE)
-            + 0.5 * CELL_SIZE,
-        random_cell_y as f32 * CELL_SIZE - (GRID_SIZE[1] as f32 / 2.0 * CELL_SIZE)
-            + 0.5 * CELL_SIZE,
-    )
+    // Mark the snake segments as occupied.
+    for segment in snake_segments_positions {
+        let x = ((segment.x + (GRID_SIZE[0] as f32 * 0.5 * CELL_SIZE)) / CELL_SIZE) as i32;
+        let y = ((segment.y + (GRID_SIZE[1] as f32 * 0.5 * CELL_SIZE)) / CELL_SIZE) as i32;
+        let index = y * GRID_SIZE[0] + x;
+        grid[index as usize] = true;
+    }
+
+    // todo: handle no space left for food here
+    if let Some(food_pos) = current_food_position {
+        // Mark the current food position as occupied.
+        let food_x = ((food_pos.x + (GRID_SIZE[0] as f32 * 0.5 * CELL_SIZE)) / CELL_SIZE) as i32;
+        let food_y = ((food_pos.y + (GRID_SIZE[1] as f32 * 0.5 * CELL_SIZE)) / CELL_SIZE) as i32;
+        let food_index = food_y * GRID_SIZE[0] + food_x;
+        grid[food_index as usize] = true;
+    }
+
+    // Collect all free positions.
+    let mut free_positions = Vec::new();
+    for y in 0..GRID_SIZE[1] {
+        for x in 0..GRID_SIZE[0] {
+            let index = y * GRID_SIZE[0] + x;
+            if !grid[index as usize] {
+                free_positions.push(Vec2::new(
+                    (x as f32) * CELL_SIZE - (GRID_SIZE[0] as f32 * 0.5 * CELL_SIZE) + (CELL_SIZE * 0.5),
+                    (y as f32) * CELL_SIZE - GRID_SIZE[1] as f32 * 0.5 * CELL_SIZE + (CELL_SIZE * 0.5)));
+            }
+        }
+    }
+
+    // Return a random free position or None if there are no free cells.
+    if free_positions.is_empty() {
+        None
+    } else {
+        let mut rng = rand::thread_rng();
+        let free_pos = free_positions[rng.gen_range(0..free_positions.len())];
+        println!("Selected free position: {:?}", free_pos);
+        Some(free_pos)
+    }
 }
-
 fn is_inside_map_bounds(position: Vec2) -> bool {
     let half_grid_size_x = GRID_SIZE[0] as f32 / 2.0 * CELL_SIZE;
     let half_grid_size_y = GRID_SIZE[1] as f32 / 2.0 * CELL_SIZE;
@@ -219,7 +258,11 @@ fn move_snecko(
                         segment_transform.translation.truncate(),
                         snake_segments_vec.len() as i32,
                     );
-                    let new_food_position = random_food_position();
+                    let new_food_position = get_new_food_position(
+                        snake_segments_vec.iter().clone().map(|(t, _)| t.translation.truncate()).collect::<Vec<_>>(),
+                        Some(food_transform.translation.truncate()),
+                    )
+                        .unwrap();
                     food_transform.translation.x = new_food_position.x;
                     food_transform.translation.y = new_food_position.y;
                 }
@@ -239,6 +282,7 @@ fn move_snecko(
 }
 
 // todo: those separate methods are overkill
+// todo: prevent turning around in opposite direction
 fn handle_turn_up(mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>) {
     global_game_state_q.get_single_mut().unwrap().direction = Direction::UP;
 }
