@@ -9,6 +9,7 @@ pub enum Direction {
     RIGHT,
 }
 
+// todo: refactor to resource
 #[derive(Component)]
 pub struct GlobalGameState {
     pub direction: Direction,
@@ -26,21 +27,17 @@ impl GlobalGameState {
 
 #[derive(Component)]
 pub struct SnakeSegment {
-    pub(crate) index: i32,
-    pub(crate) segment_in_front: Option<Entity>
+    pub index: i32,
+    // this flag is used to delay movement of segment by n move ticks
+    // so that spawn happens at the end of the snake
+    pub move_delay: i32
 }
 
 impl SnakeSegment {
-    pub fn new(index: i32, segment_in_front: Entity) -> Self {
+    pub fn new(index: i32, move_delay: i32) -> Self {
         Self {
             index,
-            segment_in_front: Some(segment_in_front)
-        }
-    }
-    pub fn new_head() -> Self {
-        Self {
-            segment_in_front: None,
-            index: 0,
+            move_delay
         }
     }
 }

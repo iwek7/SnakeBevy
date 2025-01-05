@@ -1,14 +1,14 @@
 mod components;
 
-use std::ops::Div;
 use bevy::app::App;
-use bevy::color::palettes::basic::{BLACK};
+use bevy::color::palettes::basic::BLACK;
 use bevy::ecs::query::{QueryData, QueryFilter, WorldQuery};
 use bevy::math::vec2;
+use std::ops::Div;
 use std::time::Duration;
 
 use crate::components::{
-    Direction, Food, FoodBundle, GlobalGameState, SnakeSegmentBundle, SnakeSegment,
+    Direction, Food, FoodBundle, GlobalGameState, SnakeSegment, SnakeSegmentBundle,
 };
 use bevy::input::common_conditions::*;
 use bevy::prelude::*;
@@ -33,8 +33,6 @@ pub const SNAKE_MOVE_TIMEOUT: Duration = Duration::from_millis(200);
 
 const FOOD_COLOR: Color = Color::srgba(4. / 255., 12. / 255., 239. / 255., 1.0);
 const FOOD_RADIUS: f32 = CELL_SIZE * 0.4;
-
-
 
 fn main() {
     App::new()
@@ -92,7 +90,13 @@ fn setup_snake(
     }
 
     // spawning snake
-    spawn_snake_segment(&mut commands, &mut meshes, &mut materials, vec2(0.0, 0.0));
+    spawn_snake_segment(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        vec2(0.0, 0.0),
+        0,
+    );
 
     // spawn some food
     let food_mesh = Mesh2d(meshes.add(Circle::new(FOOD_RADIUS)));
@@ -106,15 +110,22 @@ fn setup_snake(
 }
 
 fn spawn_snake_segment(
+    // todo meshes and materials need to go
     mut commands: &mut Commands,
     mut meshes: &mut ResMut<Assets<Mesh>>,
     mut materials: &mut ResMut<Assets<ColorMaterial>>,
     position: Vec2,
+    index: i32,
 ) {
     let snake_mesh = Mesh2d(meshes.add(Rectangle::new(SNAKE_SIZE, SNAKE_SIZE)));
     let snake_material = MeshMaterial2d(materials.add(SNAKE_COLOR));
 
-    let snake = SnakeSegmentBundle::new(snake_mesh, snake_material, position, SnakeSegment::new_head());
+    let snake = SnakeSegmentBundle::new(
+        snake_mesh,
+        snake_material,
+        position,
+        SnakeSegment::new(index, index),
+    );
 
     commands.spawn(snake);
 }
@@ -124,14 +135,19 @@ fn random_food_position() -> Vec2 {
     let random_cell_y = rand::thread_rng().gen_range(0..GRID_SIZE[1]);
 
     vec2(
-        random_cell_x as f32 * CELL_SIZE - (GRID_SIZE[0] as f32 / 2.0 * CELL_SIZE) + 0.5 * CELL_SIZE,
-        random_cell_y as f32 * CELL_SIZE - (GRID_SIZE[1] as f32 / 2.0 * CELL_SIZE) + 0.5 * CELL_SIZE,
+        random_cell_x as f32 * CELL_SIZE - (GRID_SIZE[0] as f32 / 2.0 * CELL_SIZE)
+            + 0.5 * CELL_SIZE,
+        random_cell_y as f32 * CELL_SIZE - (GRID_SIZE[1] as f32 / 2.0 * CELL_SIZE)
+            + 0.5 * CELL_SIZE,
     )
 }
 
 fn move_snecko(
     time: Res<Time>,
-    mut snake_segments_q: Query<(&mut Transform, &SnakeSegment), (With<SnakeSegment>, Without<Food>)>,
+    mut snake_segments_q: Query<
+        (&mut Transform, &mut SnakeSegment),
+        (With<SnakeSegment>, Without<Food>),
+    >,
     // we don't want mutable access to current direction but we get it anyway :(
     mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>,
     mut food_q: Query<&mut Transform, (With<Food>, Without<SnakeSegment>)>,
@@ -139,20 +155,40 @@ fn move_snecko(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-
     let mut global_state = global_game_state_q.get_single_mut().unwrap();
 
     global_state.move_timer.tick(time.delta());
-    if (global_state.move_timer.finished()) {
-        for (mut segment_transform, segment) in snake_segments_q.iter_mut().sort_by_key::<(&Transform, &SnakeSegment), _>(|(_, segment)| segment.index) {
-            if segment.segment_in_front.is_none() {
+    if global_state.move_timer.finished() {
+
+        let mut snake_segments_vec = snake_segments_q.iter_mut().collect::<Vec<_>>();
+        // sorted from the back of the snecko
+        snake_segments_vec.sort_by_key(|(_, segment)| segment.index);
+
+        for i in 0..snake_segments_vec.len() {
+            let (current_slice, next_slice) = snake_segments_vec.split_at_mut(i + 1);
+            let (segment_transform, segment) = &mut current_slice[i];
+
+            // move head
+            if segment.index == 0 {
                 let current_direction = &global_state.direction;
 
                 let new_position = match &current_direction {
-                    Direction::UP => Vec2::new(segment_transform.translation.x, segment_transform.translation.y + CELL_SIZE),
-                    Direction::DOWN => Vec2::new(segment_transform.translation.x, segment_transform.translation.y - CELL_SIZE),
-                    Direction::LEFT => Vec2::new(segment_transform.translation.x - CELL_SIZE, segment_transform.translation.y),
-                    Direction::RIGHT => Vec2::new(segment_transform.translation.x + CELL_SIZE, segment_transform.translation.y),
+                    Direction::UP => Vec2::new(
+                        segment_transform.translation.x,
+                        segment_transform.translation.y + CELL_SIZE,
+                    ),
+                    Direction::DOWN => Vec2::new(
+                        segment_transform.translation.x,
+                        segment_transform.translation.y - CELL_SIZE,
+                    ),
+                    Direction::LEFT => Vec2::new(
+                        segment_transform.translation.x - CELL_SIZE,
+                        segment_transform.translation.y,
+                    ),
+                    Direction::RIGHT => Vec2::new(
+                        segment_transform.translation.x + CELL_SIZE,
+                        segment_transform.translation.y,
+                    ),
                 };
                 // check if inside the map
                 let half_grid_size_x = GRID_SIZE[0] as f32 / 2.0 * CELL_SIZE;
@@ -168,9 +204,19 @@ fn move_snecko(
 
                 let mut food_transform = food_q.get_single_mut().unwrap();
                 let food_grid_cell = food_transform.translation.div(CELL_SIZE).floor().truncate();
-                let snake_head_grid_cell = segment_transform.translation.div(CELL_SIZE).floor().truncate();
+                let snake_head_grid_cell = segment_transform
+                    .translation
+                    .div(CELL_SIZE)
+                    .floor()
+                    .truncate();
                 if food_grid_cell == snake_head_grid_cell {
-                    spawn_snake_segment(&mut commands, &mut meshes, &mut materials, vec2(0.0, 0.0));
+                    spawn_snake_segment(
+                        &mut commands,
+                        &mut meshes,
+                        &mut materials,
+                        segment_transform.translation.truncate(),
+                        snake_segments_vec.len() as i32,
+                    );
                     let new_food_position = random_food_position();
                     food_transform.translation.x = new_food_position.x;
                     food_transform.translation.y = new_food_position.y;
@@ -178,6 +224,15 @@ fn move_snecko(
 
                 // check if food is consumed
                 global_state.move_timer.reset();
+            } else {
+                if segment.move_delay > 0 {
+                    println!("123123!");
+                    segment.move_delay -= 1;
+                } else if let Some((next_transform, _)) = next_slice.first() {
+                    println!("moving the rest!");
+                    segment_transform.translation.x = next_transform.translation.x;
+                    segment_transform.translation.y = next_transform.translation.y;
+                }
             }
         }
     }
