@@ -26,8 +26,8 @@ impl GlobalGameState {
 
 #[derive(Component)]
 pub struct SnakeSegment {
-    index: i32,
-    segment_in_front: Option<Entity>
+    pub(crate) index: i32,
+    pub(crate) segment_in_front: Option<Entity>
 }
 
 impl SnakeSegment {
@@ -45,22 +45,23 @@ impl SnakeSegment {
     }
 }
 #[derive(Bundle)]
-pub struct SegmentBundle {
-    marker: SnakeSegment,
+pub struct SnakeSegmentBundle {
+    snake_segment: SnakeSegment,
     mesh: Mesh2d,
     transform: Transform,
     material: MeshMaterial2d<ColorMaterial>,
 
 }
 
-impl SegmentBundle {
-    pub fn from_single_segment(
+impl SnakeSegmentBundle {
+    pub fn new(
         mesh: Mesh2d,
         material: MeshMaterial2d<ColorMaterial>,
         segment_pos: Vec2,
-    ) -> SegmentBundle {
-        SegmentBundle {
-            marker: SnakeSegment::new_head(),
+        snake_segment: SnakeSegment
+    ) -> SnakeSegmentBundle {
+        SnakeSegmentBundle {
+            snake_segment,
             mesh,
             material,
             transform: Transform::from_xyz(segment_pos.x, segment_pos.y, SNAKE_Z),
