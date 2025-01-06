@@ -1,6 +1,6 @@
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use crate::{SNAKE_MOVE_TIMEOUT, SNAKE_Z};
+use crate::config::*;
 
 pub enum Direction {
     UP,

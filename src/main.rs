@@ -1,11 +1,10 @@
 mod components;
+mod config;
 
 use bevy::app::App;
-use bevy::color::palettes::basic::BLACK;
 use bevy::ecs::query::{QueryData, QueryFilter, WorldQuery};
 use bevy::math::vec2;
 use std::ops::Div;
-use std::time::Duration;
 
 use crate::components::{
     Direction, Food, FoodBundle, GlobalGameState, SnakeSegment, SnakeSegmentBundle,
@@ -13,26 +12,8 @@ use crate::components::{
 use bevy::input::common_conditions::*;
 use bevy::prelude::*;
 use rand::Rng;
+use crate::config::*;
 
-// palette https://html-color.codes/grey
-const GRID_SIZE: [i32; 2] = [5, 5];
-
-const CELL_SIZE: f32 = 50.0;
-
-const DOT_RADIUS: f32 = 1.5;
-const DOTS_Z: f32 = 0.1;
-const DOTS_COLOR: Color = Color::srgba(128. / 255., 128. / 255., 128. / 255., 0.5);
-
-const BACKGROUND_Z: f32 = 0.0;
-const BACKGROUND_COLOR: Color = Color::srgba(169. / 255., 169. / 255., 169. / 255., 1.0);
-
-const SNAKE_Z: f32 = 1.0;
-const SNAKE_COLOR: Color = Color::srgba(85. / 255., 85. / 255., 85. / 255., 1.0);
-const SNAKE_SIZE: f32 = CELL_SIZE * 0.8;
-pub const SNAKE_MOVE_TIMEOUT: Duration = Duration::from_millis(200);
-
-const FOOD_COLOR: Color = Color::srgba(4. / 255., 12. / 255., 239. / 255., 1.0);
-const FOOD_RADIUS: f32 = CELL_SIZE * 0.4;
 
 fn main() {
     App::new()
