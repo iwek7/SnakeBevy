@@ -15,6 +15,7 @@ pub const BACKGROUND_COLOR: Color = Color::srgba(169. / 255., 169. / 255., 169. 
 
 pub const SNAKE_Z: f32 = 1.0;
 pub const SNAKE_COLOR: Color = Color::srgba(85. / 255., 85. / 255., 85. / 255., 1.0);
+pub const SNAKE_HEAD_COLOR: Color =  Color::srgba(65. / 255., 205. / 255., 225. / 255., 1.0);
 pub const SNAKE_SIZE: f32 = CELL_SIZE * 0.8;
 pub const SNAKE_MOVE_TIMEOUT: Duration = Duration::from_millis(200);
 

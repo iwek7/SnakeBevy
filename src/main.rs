@@ -103,7 +103,11 @@ fn spawn_snake_segment(
     index: i32,
 ) {
     let snake_mesh = Mesh2d(meshes.add(Rectangle::new(SNAKE_SIZE, SNAKE_SIZE)));
-    let snake_material = MeshMaterial2d(materials.add(SNAKE_COLOR));
+    let snake_material = MeshMaterial2d(materials.add(if(index == 0) {
+        SNAKE_HEAD_COLOR
+    } else {
+        SNAKE_COLOR
+    }));
 
     let snake = SnakeSegmentBundle::new(
         snake_mesh,
