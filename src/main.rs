@@ -94,7 +94,7 @@ fn setup_snake(
     commands.spawn(food);
 
     // initializing game state
-    commands.spawn((GlobalGameState::new(RIGHT),));
+    commands.insert_resource(GlobalGameState::new(RIGHT));
 }
 
 fn spawn_snake_segment(
@@ -185,13 +185,12 @@ fn move_snecko(
         (With<SnakeSegment>, Without<Food>),
     >,
     // we don't want mutable access to current direction but we get it anyway :(
-    mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>,
+    mut global_state: ResMut<GlobalGameState>,
     mut food_q: Query<&mut Transform, (With<Food>, Without<SnakeSegment>)>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let mut global_state = global_game_state_q.get_single_mut().unwrap();
 
     global_state.move_timer.tick(time.delta());
     if global_state.move_timer.finished() {
@@ -271,27 +270,26 @@ fn move_snecko(
 
 // todo: those separate methods are overkill
 // todo: dont prevent turning around in opposite direction if snake is head only
-fn handle_turn_up(mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>) {
-    if global_game_state_q.get_single_mut().unwrap().direction != DOWN {
-        global_game_state_q.get_single_mut().unwrap().direction = UP;
-
+fn handle_turn_up(mut global_game_state: ResMut<GlobalGameState>) {
+    if global_game_state.direction != DOWN {
+        global_game_state.direction = UP;
     }
 }
 
-fn handle_turn_down(mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>) {
-    if global_game_state_q.get_single_mut().unwrap().direction != UP {
-        global_game_state_q.get_single_mut().unwrap().direction = DOWN;
+fn handle_turn_down(mut global_game_state: ResMut<GlobalGameState>) {
+    if global_game_state.direction != UP {
+        global_game_state.direction = DOWN;
     }
 }
 
-fn handle_turn_left(mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>) {
-    if global_game_state_q.get_single_mut().unwrap().direction != RIGHT {
-        global_game_state_q.get_single_mut().unwrap().direction = LEFT;
+fn handle_turn_left(mut global_game_state: ResMut<GlobalGameState>) {
+    if global_game_state.direction != RIGHT {
+        global_game_state.direction = LEFT;
     }
 }
 
-fn handle_turn_right(mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>) {
-    if global_game_state_q.get_single_mut().unwrap().direction != LEFT {
-        global_game_state_q.get_single_mut().unwrap().direction = RIGHT;
+fn handle_turn_right(mut global_game_state: ResMut<GlobalGameState>) {
+    if global_game_state.direction != LEFT {
+        global_game_state.direction = RIGHT;
     }
 }

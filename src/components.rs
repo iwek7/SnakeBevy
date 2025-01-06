@@ -10,8 +10,7 @@ pub enum Direction {
     RIGHT,
 }
 
-// todo: refactor to resource
-#[derive(Component)]
+#[derive(Resource)]
 pub struct GlobalGameState {
     pub direction: Direction,
     pub move_timer: Timer
