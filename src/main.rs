@@ -1,6 +1,7 @@
 mod components;
 mod config;
 
+use std::cmp::PartialEq;
 use bevy::app::App;
 use bevy::ecs::query::{QueryData, QueryFilter, WorldQuery};
 use bevy::math::vec2;
@@ -12,6 +13,8 @@ use crate::components::{
 use bevy::input::common_conditions::*;
 use bevy::prelude::*;
 use rand::Rng;
+use Direction::{LEFT, RIGHT, UP};
+use crate::components::Direction::DOWN;
 use crate::config::*;
 
 
@@ -91,7 +94,7 @@ fn setup_snake(
     commands.spawn(food);
 
     // initializing game state
-    commands.spawn((GlobalGameState::new(Direction::RIGHT),));
+    commands.spawn((GlobalGameState::new(RIGHT),));
 }
 
 fn spawn_snake_segment(
@@ -205,7 +208,7 @@ fn move_snecko(
                 let current_direction = &global_state.direction;
 
                 let new_position = match &current_direction {
-                    Direction::UP => Vec2::new(
+                    UP => Vec2::new(
                         segment_transform.translation.x,
                         segment_transform.translation.y + CELL_SIZE,
                     ),
@@ -213,11 +216,11 @@ fn move_snecko(
                         segment_transform.translation.x,
                         segment_transform.translation.y - CELL_SIZE,
                     ),
-                    Direction::LEFT => Vec2::new(
+                    LEFT => Vec2::new(
                         segment_transform.translation.x - CELL_SIZE,
                         segment_transform.translation.y,
                     ),
-                    Direction::RIGHT => Vec2::new(
+                    RIGHT => Vec2::new(
                         segment_transform.translation.x + CELL_SIZE,
                         segment_transform.translation.y,
                     ),
@@ -267,19 +270,28 @@ fn move_snecko(
 }
 
 // todo: those separate methods are overkill
-// todo: prevent turning around in opposite direction
+// todo: dont prevent turning around in opposite direction if snake is head only
 fn handle_turn_up(mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>) {
-    global_game_state_q.get_single_mut().unwrap().direction = Direction::UP;
+    if global_game_state_q.get_single_mut().unwrap().direction != DOWN {
+        global_game_state_q.get_single_mut().unwrap().direction = UP;
+
+    }
 }
 
 fn handle_turn_down(mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>) {
-    global_game_state_q.get_single_mut().unwrap().direction = Direction::DOWN;
+    if global_game_state_q.get_single_mut().unwrap().direction != UP {
+        global_game_state_q.get_single_mut().unwrap().direction = DOWN;
+    }
 }
 
 fn handle_turn_left(mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>) {
-    global_game_state_q.get_single_mut().unwrap().direction = Direction::LEFT;
+    if global_game_state_q.get_single_mut().unwrap().direction != RIGHT {
+        global_game_state_q.get_single_mut().unwrap().direction = LEFT;
+    }
 }
 
 fn handle_turn_right(mut global_game_state_q: Query<&mut GlobalGameState, With<GlobalGameState>>) {
-    global_game_state_q.get_single_mut().unwrap().direction = Direction::RIGHT;
+    if global_game_state_q.get_single_mut().unwrap().direction != LEFT {
+        global_game_state_q.get_single_mut().unwrap().direction = RIGHT;
+    }
 }

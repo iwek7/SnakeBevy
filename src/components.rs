@@ -2,6 +2,7 @@ use bevy::math::Vec2;
 use bevy::prelude::*;
 use crate::config::*;
 
+#[derive(PartialEq)]
 pub enum Direction {
     UP,
     DOWN,
