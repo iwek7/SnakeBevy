@@ -1,26 +1,27 @@
 mod components;
 mod config;
 
-use std::cmp::PartialEq;
 use bevy::app::App;
 use bevy::ecs::query::{QueryData, QueryFilter, WorldQuery};
 use bevy::math::vec2;
+use std::cmp::PartialEq;
 use std::ops::Div;
 
+use crate::components::Direction::DOWN;
 use crate::components::{
-    Direction, Food, FoodBundle, GlobalGameState, SnakeSegment, SnakeSegmentBundle,
+    DespawnOnLoss, Direction, Food, FoodBundle, GameLostEvent, GlobalGameState, SnakeSegment,
+    SnakeSegmentBundle,
 };
+use crate::config::*;
 use bevy::input::common_conditions::*;
 use bevy::prelude::*;
 use rand::Rng;
 use Direction::{LEFT, RIGHT, UP};
-use crate::components::Direction::DOWN;
-use crate::config::*;
-
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_event::<GameLostEvent>()
         .add_systems(Startup, (setup_snake, setup_camera))
         .add_systems(
             Update,
@@ -31,6 +32,7 @@ fn main() {
                 handle_turn_down.run_if(input_just_pressed(KeyCode::ArrowDown)),
                 handle_turn_left.run_if(input_just_pressed(KeyCode::ArrowLeft)),
                 handle_turn_right.run_if(input_just_pressed(KeyCode::ArrowRight)),
+                handle_game_lost
             ),
         )
         .run();
@@ -106,7 +108,7 @@ fn spawn_snake_segment(
     index: i32,
 ) {
     let snake_mesh = Mesh2d(meshes.add(Rectangle::new(SNAKE_SIZE, SNAKE_SIZE)));
-    let snake_material = MeshMaterial2d(materials.add(if(index == 0) {
+    let snake_material = MeshMaterial2d(materials.add(if (index == 0) {
         SNAKE_HEAD_COLOR
     } else {
         SNAKE_COLOR
@@ -153,8 +155,11 @@ fn get_new_food_position(
             let index = y * GRID_SIZE[0] + x;
             if !grid[index as usize] {
                 free_positions.push(Vec2::new(
-                    (x as f32) * CELL_SIZE - (GRID_SIZE[0] as f32 * 0.5 * CELL_SIZE) + (CELL_SIZE * 0.5),
-                    (y as f32) * CELL_SIZE - GRID_SIZE[1] as f32 * 0.5 * CELL_SIZE + (CELL_SIZE * 0.5)));
+                    (x as f32) * CELL_SIZE - (GRID_SIZE[0] as f32 * 0.5 * CELL_SIZE)
+                        + (CELL_SIZE * 0.5),
+                    (y as f32) * CELL_SIZE - GRID_SIZE[1] as f32 * 0.5 * CELL_SIZE
+                        + (CELL_SIZE * 0.5),
+                ));
             }
         }
     }
@@ -190,13 +195,15 @@ fn move_snecko(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut game_lost_ev_writer: EventWriter<GameLostEvent>
 ) {
-
     global_state.move_timer.tick(time.delta());
     if global_state.move_timer.finished() {
         let mut snake_segments_vec = snake_segments_q.iter_mut().collect::<Vec<_>>();
         // sorted from the back of the snecko
         snake_segments_vec.sort_by_key(|(_, segment)| -segment.index);
+
+        let sneko_positions = snake_segments_vec.iter().map(|(t, _)| t.translation.truncate()).collect::<Vec<_>>();
 
         for i in 0..snake_segments_vec.len() {
             let (current_slice, next_slice) = snake_segments_vec.split_at_mut(i + 1);
@@ -211,7 +218,7 @@ fn move_snecko(
                         segment_transform.translation.x,
                         segment_transform.translation.y + CELL_SIZE,
                     ),
-                    Direction::DOWN => Vec2::new(
+                    DOWN => Vec2::new(
                         segment_transform.translation.x,
                         segment_transform.translation.y - CELL_SIZE,
                     ),
@@ -228,6 +235,16 @@ fn move_snecko(
                 if is_inside_map_bounds(new_position) {
                     segment_transform.translation.x = new_position.x;
                     segment_transform.translation.y = new_position.y;
+                } else {
+                    game_lost_ev_writer.send(GameLostEvent::new());
+                    return;
+                }
+
+                for pos in sneko_positions.iter() {
+                    if pos == &new_position {
+                        game_lost_ev_writer.send(GameLostEvent::new());
+                        return;
+                    }
                 }
 
                 let mut food_transform = food_q.get_single_mut().unwrap();
@@ -246,10 +263,14 @@ fn move_snecko(
                         snake_segments_vec.len() as i32,
                     );
                     let new_food_position = get_new_food_position(
-                        snake_segments_vec.iter().clone().map(|(t, _)| t.translation.truncate()).collect::<Vec<_>>(),
+                        snake_segments_vec
+                            .iter()
+                            .clone()
+                            .map(|(t, _)| t.translation.truncate())
+                            .collect::<Vec<_>>(),
                         Some(food_transform.translation.truncate()),
                     )
-                        .unwrap();
+                    .unwrap();
                     food_transform.translation.x = new_food_position.x;
                     food_transform.translation.y = new_food_position.y;
                 }
@@ -264,6 +285,18 @@ fn move_snecko(
                     segment_transform.translation.y = next_transform.translation.y;
                 }
             }
+        }
+    }
+}
+
+fn handle_game_lost(
+    mut commands: Commands,
+    mut event_reader: EventReader<GameLostEvent>,
+    query: Query<Entity, With<DespawnOnLoss>>,
+) {
+    for _ in event_reader.read() {
+        for e in query.iter() {
+            commands.entity(e).despawn_recursive();
         }
     }
 }

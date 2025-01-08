@@ -1,6 +1,6 @@
+use crate::config::*;
 use bevy::math::Vec2;
 use bevy::prelude::*;
-use crate::config::*;
 
 #[derive(PartialEq)]
 pub enum Direction {
@@ -13,14 +13,14 @@ pub enum Direction {
 #[derive(Resource)]
 pub struct GlobalGameState {
     pub direction: Direction,
-    pub move_timer: Timer
+    pub move_timer: Timer,
 }
 
 impl GlobalGameState {
     pub fn new(direction: Direction) -> Self {
-        Self { 
+        Self {
             direction,
-            move_timer: Timer::new(SNAKE_MOVE_TIMEOUT, TimerMode::Repeating)
+            move_timer: Timer::new(SNAKE_MOVE_TIMEOUT, TimerMode::Repeating),
         }
     }
 }
@@ -30,15 +30,12 @@ pub struct SnakeSegment {
     pub index: i32,
     // this flag is used to delay movement of segment by n move ticks
     // so that spawn happens at the end of the snake
-    pub move_delay: i32
+    pub move_delay: i32,
 }
 
 impl SnakeSegment {
     pub fn new(index: i32, move_delay: i32) -> Self {
-        Self {
-            index,
-            move_delay
-        }
+        Self { index, move_delay }
     }
 }
 #[derive(Bundle)]
@@ -47,7 +44,7 @@ pub struct SnakeSegmentBundle {
     mesh: Mesh2d,
     transform: Transform,
     material: MeshMaterial2d<ColorMaterial>,
-
+    despawn_on_loss: DespawnOnLoss
 }
 
 impl SnakeSegmentBundle {
@@ -55,13 +52,14 @@ impl SnakeSegmentBundle {
         mesh: Mesh2d,
         material: MeshMaterial2d<ColorMaterial>,
         segment_pos: Vec2,
-        snake_segment: SnakeSegment
+        snake_segment: SnakeSegment,
     ) -> SnakeSegmentBundle {
         SnakeSegmentBundle {
             snake_segment,
             mesh,
             material,
             transform: Transform::from_xyz(segment_pos.x, segment_pos.y, SNAKE_Z),
+            despawn_on_loss: DespawnOnLoss::new()
         }
     }
 }
@@ -90,5 +88,23 @@ impl FoodBundle {
             material,
             transform: Transform::from_xyz(position.x, position.y, SNAKE_Z),
         }
+    }
+}
+
+#[derive(Event)]
+pub struct GameLostEvent {}
+
+impl GameLostEvent {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+#[derive(Component)]
+pub struct DespawnOnLoss {}
+
+impl DespawnOnLoss {
+    fn new() -> Self {
+        Self {}
     }
 }
