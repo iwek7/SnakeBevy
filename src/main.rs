@@ -7,7 +7,6 @@ use bevy::math::vec2;
 use std::cmp::PartialEq;
 use std::ops::Div;
 
-use crate::components::Direction::DOWN;
 use crate::components::{
     DespawnOnLoss, Direction, Food, FoodBundle, GameLostEvent, GlobalGameState, SnakeSegment,
     SnakeSegmentBundle,
@@ -16,13 +15,13 @@ use crate::config::*;
 use bevy::input::common_conditions::*;
 use bevy::prelude::*;
 use rand::Rng;
-use Direction::{LEFT, RIGHT, UP};
+use Direction::{LEFT, RIGHT, UP, DOWN};
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_event::<GameLostEvent>()
-        .add_systems(Startup, (setup_snake, setup_camera))
+        .add_systems(Startup, (setup_game, setup_camera, setup_snake))
         .add_systems(
             Update,
             (
@@ -42,7 +41,7 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2d);
 }
 
-fn setup_snake(
+fn setup_game(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -74,12 +73,26 @@ fn setup_snake(
             ));
         }
     }
+}
 
+fn setup_snake(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    actually_setup_snake(&mut commands, &mut meshes, &mut materials);
+}
+
+fn actually_setup_snake(
+    mut commands: &mut Commands,
+    mut meshes: &mut ResMut<Assets<Mesh>>,
+    mut materials: &mut ResMut<Assets<ColorMaterial>>,
+) {
     // spawning snake
     spawn_snake_segment(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
+        commands,
+        meshes,
+        materials,
         vec2(0.0, 0.0),
         0,
     );
@@ -94,6 +107,7 @@ fn setup_snake(
         get_new_food_position(vec![vec2(0.0, 0.0)], None).unwrap(),
     );
     commands.spawn(food);
+
 
     // initializing game state
     commands.insert_resource(GlobalGameState::new(RIGHT));
@@ -293,11 +307,15 @@ fn handle_game_lost(
     mut commands: Commands,
     mut event_reader: EventReader<GameLostEvent>,
     query: Query<Entity, With<DespawnOnLoss>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for _ in event_reader.read() {
         for e in query.iter() {
             commands.entity(e).despawn_recursive();
         }
+        actually_setup_snake(&mut commands, &mut meshes, &mut materials);
+
     }
 }
 

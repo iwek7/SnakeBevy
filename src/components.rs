@@ -78,6 +78,7 @@ pub struct FoodBundle {
     mesh: Mesh2d,
     transform: Transform,
     material: MeshMaterial2d<ColorMaterial>,
+    despawn_on_loss: DespawnOnLoss
 }
 
 impl FoodBundle {
@@ -87,6 +88,7 @@ impl FoodBundle {
             mesh,
             material,
             transform: Transform::from_xyz(position.x, position.y, SNAKE_Z),
+            despawn_on_loss: DespawnOnLoss::new()
         }
     }
 }
