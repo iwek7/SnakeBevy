@@ -15,7 +15,7 @@ use crate::config::*;
 use bevy::input::common_conditions::*;
 use bevy::prelude::*;
 use rand::Rng;
-use Direction::{LEFT, RIGHT, UP, DOWN};
+use Direction::{DOWN, LEFT, RIGHT, UP};
 
 fn main() {
     App::new()
@@ -31,7 +31,7 @@ fn main() {
                 handle_turn_down.run_if(input_just_pressed(KeyCode::ArrowDown)),
                 handle_turn_left.run_if(input_just_pressed(KeyCode::ArrowLeft)),
                 handle_turn_right.run_if(input_just_pressed(KeyCode::ArrowRight)),
-                handle_game_lost
+                handle_game_lost,
             ),
         )
         .run();
@@ -89,13 +89,7 @@ fn actually_setup_snake(
     mut materials: &mut ResMut<Assets<ColorMaterial>>,
 ) {
     // spawning snake
-    spawn_snake_segment(
-        commands,
-        meshes,
-        materials,
-        vec2(0.0, 0.0),
-        0,
-    );
+    spawn_snake_segment(commands, meshes, materials, vec2(0.0, 0.0), 0);
 
     // spawn some food
     let food_mesh = Mesh2d(meshes.add(Circle::new(FOOD_RADIUS)));
@@ -107,7 +101,6 @@ fn actually_setup_snake(
         get_new_food_position(vec![vec2(0.0, 0.0)], None).unwrap(),
     );
     commands.spawn(food);
-
 
     // initializing game state
     commands.insert_resource(GlobalGameState::new(RIGHT));
@@ -184,7 +177,6 @@ fn get_new_food_position(
     } else {
         let mut rng = rand::thread_rng();
         let free_pos = free_positions[rng.gen_range(0..free_positions.len())];
-        println!("Selected free position: {:?}", free_pos);
         Some(free_pos)
     }
 }
@@ -195,6 +187,15 @@ fn is_inside_map_bounds(position: Vec2) -> bool {
         && position.x < half_grid_size_x
         && position.y > -half_grid_size_y
         && position.y < half_grid_size_y
+}
+
+fn calc_new_position(current_direction: &Direction, current_position: &Vec2) -> Vec2 {
+    match &current_direction {
+        UP => Vec2::new(current_position.x, current_position.y + CELL_SIZE),
+        DOWN => Vec2::new(current_position.x, current_position.y - CELL_SIZE),
+        LEFT => Vec2::new(current_position.x - CELL_SIZE, current_position.y),
+        RIGHT => Vec2::new(current_position.x + CELL_SIZE, current_position.y),
+    }
 }
 
 fn move_snecko(
@@ -209,7 +210,7 @@ fn move_snecko(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut game_lost_ev_writer: EventWriter<GameLostEvent>
+    mut game_lost_ev_writer: EventWriter<GameLostEvent>,
 ) {
     global_state.move_timer.tick(time.delta());
     if global_state.move_timer.finished() {
@@ -217,13 +218,13 @@ fn move_snecko(
         // sorted from the back of the snecko
         snake_segments_vec.sort_by_key(|(_, segment)| -segment.index);
 
-        let mut sneko_positions_for_collision_check = snake_segments_vec.iter()
+        let mut sneko_positions_for_collision_check = snake_segments_vec
+            .iter()
             .map(|(t, _)| t.translation.truncate())
             .collect::<Vec<_>>();
         // so this is position of last segment before moving
         // so after whole snake moves it won't be occupied (unless by the head)
         sneko_positions_for_collision_check.remove(0);
-
 
         for i in 0..snake_segments_vec.len() {
             let (current_slice, next_slice) = snake_segments_vec.split_at_mut(i + 1);
@@ -232,26 +233,7 @@ fn move_snecko(
             // move head
             if segment.index == 0 {
                 let current_direction = &global_state.direction;
-
-                let new_position = match &current_direction {
-                    UP => Vec2::new(
-                        segment_transform.translation.x,
-                        segment_transform.translation.y + CELL_SIZE,
-                    ),
-                    DOWN => Vec2::new(
-                        segment_transform.translation.x,
-                        segment_transform.translation.y - CELL_SIZE,
-                    ),
-                    LEFT => Vec2::new(
-                        segment_transform.translation.x - CELL_SIZE,
-                        segment_transform.translation.y,
-                    ),
-                    RIGHT => Vec2::new(
-                        segment_transform.translation.x + CELL_SIZE,
-                        segment_transform.translation.y,
-                    ),
-                };
-
+                let new_position = calc_new_position(current_direction, &segment_transform.translation.truncate());
                 if is_inside_map_bounds(new_position) {
                     segment_transform.translation.x = new_position.x;
                     segment_transform.translation.y = new_position.y;
@@ -321,7 +303,6 @@ fn handle_game_lost(
             commands.entity(e).despawn_recursive();
         }
         actually_setup_snake(&mut commands, &mut meshes, &mut materials);
-
     }
 }
 
