@@ -217,7 +217,13 @@ fn move_snecko(
         // sorted from the back of the snecko
         snake_segments_vec.sort_by_key(|(_, segment)| -segment.index);
 
-        let sneko_positions = snake_segments_vec.iter().map(|(t, _)| t.translation.truncate()).collect::<Vec<_>>();
+        let mut sneko_positions_for_collision_check = snake_segments_vec.iter()
+            .map(|(t, _)| t.translation.truncate())
+            .collect::<Vec<_>>();
+        // so this is position of last segment before moving
+        // so after whole snake moves it won't be occupied (unless by the head)
+        sneko_positions_for_collision_check.remove(0);
+
 
         for i in 0..snake_segments_vec.len() {
             let (current_slice, next_slice) = snake_segments_vec.split_at_mut(i + 1);
@@ -254,7 +260,7 @@ fn move_snecko(
                     return;
                 }
 
-                for pos in sneko_positions.iter() {
+                for pos in sneko_positions_for_collision_check.iter() {
                     if pos == &new_position {
                         game_lost_ev_writer.send(GameLostEvent::new());
                         return;
