@@ -14,12 +14,20 @@ use crate::components::{
 use crate::config::*;
 use bevy::input::common_conditions::*;
 use bevy::prelude::*;
+use bevy::window::WindowMode;
 use rand::Rng;
 use Direction::{DOWN, LEFT, RIGHT, UP};
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                resolution: bevy::window::WindowResolution::new(1920.0, 1080.0), // Set your desired resolution
+                mode: WindowMode::Fullscreen(MonitorSelection::Primary), // Enable fullscreen mode
+                ..Default::default()
+            }),
+            ..Default::default()
+        }))
         .add_event::<GameLostEvent>()
         .add_systems(Startup, (setup_game, setup_camera, setup_snake))
         .add_systems(
@@ -31,6 +39,7 @@ fn main() {
                 handle_turn_down.run_if(input_just_pressed(KeyCode::ArrowDown)),
                 handle_turn_left.run_if(input_just_pressed(KeyCode::ArrowLeft)),
                 handle_turn_right.run_if(input_just_pressed(KeyCode::ArrowRight)),
+                quit_game.run_if(input_just_pressed(KeyCode::Escape)),
                 handle_game_lost,
             ),
         )
@@ -233,7 +242,8 @@ fn move_snecko(
             // move head
             if segment.index == 0 {
                 let current_direction = &global_state.direction;
-                let new_position = calc_new_position(current_direction, &segment_transform.translation.truncate());
+                let new_position =
+                    calc_new_position(current_direction, &segment_transform.translation.truncate());
                 if is_inside_map_bounds(new_position) {
                     segment_transform.translation.x = new_position.x;
                     segment_transform.translation.y = new_position.y;
@@ -330,4 +340,8 @@ fn handle_turn_right(mut global_game_state: ResMut<GlobalGameState>) {
     if global_game_state.direction != LEFT {
         global_game_state.direction = RIGHT;
     }
+}
+
+fn quit_game(mut app_exit_events: EventWriter<AppExit>) {
+        app_exit_events.send(AppExit::Success);
 }
