@@ -21,3 +21,4 @@ pub const SNAKE_MOVE_TIMEOUT: Duration = Duration::from_millis(200);
 
 pub const FOOD_COLOR: Color = Color::srgba(4. / 255., 12. / 255., 239. / 255., 1.0);
 pub const FOOD_RADIUS: f32 = CELL_SIZE * 0.4;
+pub const FOOD_Z: f32 = 0.2;

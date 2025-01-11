@@ -87,7 +87,7 @@ impl FoodBundle {
             food: Food::new(),
             mesh,
             material,
-            transform: Transform::from_xyz(position.x, position.y, SNAKE_Z),
+            transform: Transform::from_xyz(position.x, position.y, FOOD_Z),
             despawn_on_loss: DespawnOnLoss::new()
         }
     }

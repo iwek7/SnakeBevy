@@ -343,5 +343,5 @@ fn handle_turn_right(mut global_game_state: ResMut<GlobalGameState>) {
 }
 
 fn quit_game(mut app_exit_events: EventWriter<AppExit>) {
-        app_exit_events.send(AppExit::Success);
+    app_exit_events.send(AppExit::Success);
 }
