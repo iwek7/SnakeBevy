@@ -51,14 +51,14 @@ impl SnakeSegmentBundle {
     pub fn new(
         mesh: Mesh2d,
         material: MeshMaterial2d<ColorMaterial>,
-        segment_pos: Vec2,
+        segment_pos: Vec3,
         snake_segment: SnakeSegment,
     ) -> SnakeSegmentBundle {
         SnakeSegmentBundle {
             snake_segment,
             mesh,
             material,
-            transform: Transform::from_xyz(segment_pos.x, segment_pos.y, SNAKE_Z),
+            transform: Transform::from_xyz(segment_pos.x, segment_pos.y, segment_pos.z),
             despawn_on_loss: DespawnOnLoss::new()
         }
     }
