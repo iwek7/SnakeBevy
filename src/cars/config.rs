@@ -18,4 +18,4 @@ pub const CAR_Z: f32 = 1.;
 pub const CAR_SIZE: Vec2 = vec2(400., 200.);
 
 
-pub const ENEMY_CAR_SPEED: f32 = 2.;
+pub const ENEMY_CAR_SPEED: f32 = 4.;

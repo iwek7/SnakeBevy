@@ -9,6 +9,7 @@ pub fn quit_game(mut app_exit_events: EventWriter<AppExit>) {
     app_exit_events.send(AppExit::Success);
 }
 
+#[allow(dead_code)]
 pub fn print_mouse_position(mut cursor_moved_events: EventReader<CursorMoved>) {
     // 2) Print out the mouse position each time it moves
     for event in cursor_moved_events.read() {

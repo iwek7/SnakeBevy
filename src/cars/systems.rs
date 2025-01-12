@@ -102,6 +102,17 @@ pub fn move_enemy_cars(
     }
 }
 
+pub fn despawn_enemy_cars(
+    mut query: Query<(Entity, &Transform), With<EnemyCar>>,
+    mut commands: Commands
+) {
+    for (entity, transform) in query.iter() {
+        if transform.translation.x + CAR_SIZE.x / 2. < - TRACK_SHOWN_LENGTH / 2. {
+            commands.entity(entity).despawn();
+        }
+    }
+}
+
 pub fn calculate_midline() -> i32 {
     NUMBER_OF_TRACKS / 2
 }

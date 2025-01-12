@@ -1,4 +1,4 @@
-use crate::cars::systems::{move_player_car, setup_road, setup_game_state, setup_player, update_player_car_position, spawn_enemy_car, move_enemy_cars};
+use crate::cars::systems::{move_player_car, setup_road, setup_game_state, setup_player, update_player_car_position, spawn_enemy_car, move_enemy_cars, despawn_enemy_cars};
 use crate::systems::{print_mouse_position, quit_game, setup_camera};
 use bevy::app::{App, Startup, Update};
 use bevy::input::common_conditions::input_just_pressed;
@@ -36,7 +36,8 @@ pub fn launch_cars() {
                 quit_game.run_if(input_just_pressed(KeyCode::Escape)),
                 move_player_car,
                 update_player_car_position.after(move_player_car),
-                move_enemy_cars
+                move_enemy_cars,
+                despawn_enemy_cars
                 // print_mouse_position
             ),
         )
