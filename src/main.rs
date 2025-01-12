@@ -18,7 +18,7 @@ fn main() {
     }
 
     let game_name = &args[1];
-    println!("Lounching game {}", game_name);
+    println!("Launching game {}", game_name);
     match game_name.as_str() {
         "sneko" => sneko::lounch_snake(),
         "cars" => cars::launch_cars(),

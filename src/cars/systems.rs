@@ -2,6 +2,7 @@ use crate::cars::components::{EnemyCar, GameState, PlayerCar};
 use crate::cars::config::*;
 use bevy::asset::{AssetServer, Assets};
 use bevy::prelude::*;
+use rand::Rng;
 
 pub fn setup_game_state(mut commands: Commands) {
     commands.insert_resource(GameState::new());
@@ -22,10 +23,12 @@ pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 pub fn spawn_enemy_car(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let spawn_line = rand::thread_rng().gen_range(0..NUMBER_OF_LINES);
+    let y = car_at_line_y_position(spawn_line);
     let texture_left = asset_server.load("cars/redCar/redCar.png");
     commands.spawn((
         EnemyCar::new(),
-        Transform::from_xyz(400.0, 0.0, CAR_Z),
+        Transform::from_xyz(400.0, y, CAR_Z),
         Sprite {
             image: texture_left,
             flip_x: true,
@@ -40,12 +43,9 @@ pub fn setup_road(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let total_height = (TRACK_WIDTH * NUMBER_OF_TRACKS as f32)
-        + ((NUMBER_OF_TRACKS as f32 - 1.) * STRIPE_SIZE.y);
-    let road_shape = meshes.add(Rectangle::new(
-        TRACK_SHOWN_LENGTH,
-        total_height,
-    ));
+    let total_height =
+        (LINE_WIDTH * NUMBER_OF_LINES as f32) + ((NUMBER_OF_LINES as f32 - 1.) * STRIPE_SIZE.y);
+    let road_shape = meshes.add(Rectangle::new(LINE_LENGTH, total_height));
 
     commands.spawn((
         Mesh2d(road_shape),
@@ -54,11 +54,14 @@ pub fn setup_road(
     ));
 
     let mut already_drawn_stripe_lines = 0;
-    for stripe_line_idx in 0..NUMBER_OF_TRACKS - 1 {
-        let mut current_x = -TRACK_SHOWN_LENGTH / 2. + STRIPE_SIZE.x / 2. + STRIPE_GAP;
-        let line_under_stripe_offset = -total_height / 2. + stripe_line_idx as f32 * TRACK_WIDTH + already_drawn_stripe_lines as f32 * STRIPE_SIZE.y + TRACK_WIDTH;
+    for stripe_line_idx in 0..NUMBER_OF_LINES - 1 {
+        let mut current_x = -LINE_LENGTH / 2. + STRIPE_SIZE.x / 2. + STRIPE_GAP;
+        let line_under_stripe_offset = -total_height / 2.
+            + stripe_line_idx as f32 * LINE_WIDTH
+            + already_drawn_stripe_lines as f32 * STRIPE_SIZE.y
+            + LINE_WIDTH;
         let stripe_y = line_under_stripe_offset;
-        while current_x < TRACK_SHOWN_LENGTH / 2. {
+        while current_x < LINE_LENGTH / 2. {
             // todo: cache it
             let stripe_shape = meshes.add(Rectangle::from_size(STRIPE_SIZE));
             let stripe_transform = Transform::from_xyz(current_x, stripe_y, STRIPE_Z);
@@ -88,15 +91,17 @@ pub fn move_player_car(
 
 pub fn update_player_car_position(mut query: Query<(&PlayerCar, &mut Transform)>) {
     for (player_car, mut transform) in query.iter_mut() {
-        let mid_line = calculate_midline();
-        let line_offset_from_middle = player_car.current_line - mid_line;
-        transform.translation.y =  line_offset_from_middle as f32 * (TRACK_WIDTH + STRIPE_SIZE.y);
+        transform.translation.y = car_at_line_y_position(player_car.current_line);
     }
 }
 
-pub fn move_enemy_cars(
-    mut query: Query<&mut Transform, With<EnemyCar>>
-) {
+fn car_at_line_y_position(line_idx: i32) -> f32 {
+    let mid_line = calculate_midline();
+    let line_offset_from_middle = line_idx - mid_line;
+    line_offset_from_middle as f32 * (LINE_WIDTH + STRIPE_SIZE.y)
+}
+
+pub fn move_enemy_cars(mut query: Query<&mut Transform, With<EnemyCar>>) {
     for mut transform in query.iter_mut() {
         transform.translation.x = transform.translation.x - ENEMY_CAR_SPEED;
     }
@@ -104,15 +109,15 @@ pub fn move_enemy_cars(
 
 pub fn despawn_enemy_cars(
     mut query: Query<(Entity, &Transform), With<EnemyCar>>,
-    mut commands: Commands
+    mut commands: Commands,
 ) {
     for (entity, transform) in query.iter() {
-        if transform.translation.x + CAR_SIZE.x / 2. < - TRACK_SHOWN_LENGTH / 2. {
+        if transform.translation.x + CAR_SIZE.x / 2. < -LINE_LENGTH / 2. {
             commands.entity(entity).despawn();
         }
     }
 }
 
 pub fn calculate_midline() -> i32 {
-    NUMBER_OF_TRACKS / 2
+    NUMBER_OF_LINES / 2
 }

@@ -1,6 +1,6 @@
 use std::cmp::{max, min};
 use bevy::prelude::*;
-use crate::cars::config::NUMBER_OF_TRACKS;
+use crate::cars::config::NUMBER_OF_LINES;
 use crate::cars::systems::calculate_midline;
 
 #[derive(Component)]
@@ -14,7 +14,7 @@ impl PlayerCar {
     }
 
     pub fn try_move_up(&mut self) {
-        self.current_line = min(NUMBER_OF_TRACKS - 1, self.current_line + 1);
+        self.current_line = min(NUMBER_OF_LINES - 1, self.current_line + 1);
     }
 
     pub fn try_move_down(&mut self) {
