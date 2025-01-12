@@ -1,5 +1,3 @@
-mod components;
-mod config;
 mod cars;
 mod systems;
 mod sneko;
@@ -15,5 +13,3 @@ fn main() {
     sneko::lounch_snake();
     // cars::launch_cars();
 }
-
-

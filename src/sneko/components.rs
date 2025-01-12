@@ -1,4 +1,4 @@
-use crate::config::*;
+use crate::sneko::config::*;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 

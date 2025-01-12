@@ -5,7 +5,6 @@ use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::{default, Commands, Component, IntoSystemConfigs, KeyCode, MonitorSelection, PluginGroup, Res, Sprite, Transform, Window, WindowPlugin};
 use bevy::window::WindowMode;
 use crate::systems::{quit_game, setup_camera};
-
 pub mod cars;
 
 pub fn launch_cars() {
