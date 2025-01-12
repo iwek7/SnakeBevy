@@ -1,7 +1,7 @@
 use bevy::color::Color;
 use bevy::prelude::{vec2, Vec2};
 
-pub const NUMBER_OF_TRACKS: i32 = 5;
+pub const NUMBER_OF_TRACKS: i32 = 3;
 pub const TRACK_WIDTH: f32 = 200.;
 pub const TRACK_SHOWN_LENGTH: f32 = 1000.;
 

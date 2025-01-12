@@ -38,9 +38,12 @@ pub fn setup_road(
         Transform::from_xyz(0.0, 0.0, ROAD_Z),
     ));
 
+    let mut already_drawn_stripe_lines = 0;
     for stripe_line_idx in 0..NUMBER_OF_TRACKS - 1 {
         let mut current_x = -TRACK_SHOWN_LENGTH / 2.;
-        let stripe_y = -total_height / 2. + (stripe_line_idx as f32) * (TRACK_WIDTH + STRIPE_SIZE.y) + TRACK_WIDTH;
+        let line_under_stripe_offset = -total_height / 2. + stripe_line_idx as f32 * TRACK_WIDTH + already_drawn_stripe_lines as f32 * STRIPE_SIZE.y + TRACK_WIDTH;
+        println!("{}", line_under_stripe_offset);
+        let stripe_y = line_under_stripe_offset;
         while current_x < TRACK_SHOWN_LENGTH / 2. {
             // todo: cache it
             let stripe_shape = meshes.add(Rectangle::from_size(STRIPE_SIZE));
@@ -52,6 +55,7 @@ pub fn setup_road(
             ));
             current_x += STRIPE_SIZE.x + STRIPE_GAP;
         }
+        already_drawn_stripe_lines += 1;
     }
 }
 
@@ -72,7 +76,7 @@ pub fn update_player_car_position(mut query: Query<(&PlayerCar, &mut Transform)>
     for (player_car, mut transform) in query.iter_mut() {
         let mid_line = calculate_midline();
         let line_offset_from_middle = player_car.current_line - mid_line;
-        transform.translation.y = line_offset_from_middle as f32 * TRACK_WIDTH;
+        transform.translation.y =  line_offset_from_middle as f32 * (TRACK_WIDTH + STRIPE_SIZE.y);
     }
 }
 
