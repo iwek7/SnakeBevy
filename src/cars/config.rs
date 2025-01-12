@@ -2,6 +2,9 @@ use std::time::Duration;
 use bevy::color::Color;
 use bevy::prelude::{vec2, Vec2};
 
+
+pub const DRAW_GIZMOS: bool = true;
+
 pub const NUMBER_OF_LINES: i32 = 3;
 // todo: refactor to vec2
 pub const LINE_WIDTH: f32 = 1080. / 2. / NUMBER_OF_LINES as f32;

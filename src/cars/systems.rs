@@ -1,6 +1,7 @@
 use crate::cars::components::{EnemyCar, EnemySpawnTimer, GameState, PlayerCar};
 use crate::cars::config::*;
 use bevy::asset::{AssetServer, Assets};
+use bevy::color::palettes::css::GREEN;
 use bevy::prelude::*;
 use rand::Rng;
 
@@ -138,4 +139,30 @@ pub fn despawn_enemy_cars(
 
 pub fn calculate_midline() -> i32 {
     NUMBER_OF_LINES / 2
+}
+
+pub fn draw_gizmos(
+    mut gizmos: Gizmos,
+    player_query: Query<&Transform, With<PlayerCar>>,
+    enemies_query: Query<&Transform, With<EnemyCar>>,
+) {
+    if !DRAW_GIZMOS {
+        return;
+    }
+
+    for player_transform in player_query.iter() {
+        gizmos.rect_2d(
+            Isometry2d::from_translation(player_transform.translation.truncate()),
+            CAR_SIZE,
+            GREEN,
+        );
+    }
+
+    for enemy_transform in enemies_query.iter() {
+        gizmos.rect_2d(
+            Isometry2d::from_translation(enemy_transform.translation.truncate()),
+            CAR_SIZE,
+            GREEN,
+        );
+    }
 }
