@@ -1,7 +1,7 @@
+use crate::cars::components::{GameState, PlayerCar};
 use crate::cars::config::*;
 use bevy::asset::{AssetServer, Assets};
 use bevy::prelude::*;
-use crate::cars::components::{GameState, PlayerCar};
 pub fn setup_game_state(mut commands: Commands) {
     commands.insert_resource(GameState::new());
 }
@@ -20,21 +20,39 @@ pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 }
 
-pub fn setup_background(
+pub fn setup_road(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let shape_mesh = meshes.add(Rectangle::new(
+    let total_height = (TRACK_WIDTH * NUMBER_OF_TRACKS as f32)
+        + ((NUMBER_OF_TRACKS as f32 - 1.) * STRIPE_SIZE.y);
+    let road_shape = meshes.add(Rectangle::new(
         TRACK_SHOWN_LENGTH,
-        TRACK_WIDTH * NUMBER_OF_TRACKS as f32,
+        total_height,
     ));
 
     commands.spawn((
-        Mesh2d(shape_mesh),
-        MeshMaterial2d(materials.add(BACKGROUND_COLOR)),
-        Transform::from_xyz(0.0, 0.0, BACKGROUND_Z),
+        Mesh2d(road_shape),
+        MeshMaterial2d(materials.add(ROAD_COLOR)),
+        Transform::from_xyz(0.0, 0.0, ROAD_Z),
     ));
+
+    for stripe_line_idx in 0..NUMBER_OF_TRACKS - 1 {
+        let mut current_x = -TRACK_SHOWN_LENGTH / 2.;
+        let stripe_y = -total_height / 2. + (stripe_line_idx as f32) * (TRACK_WIDTH + STRIPE_SIZE.y) + TRACK_WIDTH;
+        while current_x < TRACK_SHOWN_LENGTH / 2. {
+            // todo: cache it
+            let stripe_shape = meshes.add(Rectangle::from_size(STRIPE_SIZE));
+            let stripe_transform = Transform::from_xyz(current_x, stripe_y, STRIPE_Z);
+            commands.spawn((
+                Mesh2d(stripe_shape),
+                MeshMaterial2d(materials.add(STRIPE_COLOR)),
+                stripe_transform,
+            ));
+            current_x += STRIPE_SIZE.x + STRIPE_GAP;
+        }
+    }
 }
 
 pub fn move_player_car(
@@ -50,9 +68,7 @@ pub fn move_player_car(
     }
 }
 
-pub fn update_player_car_position(
-    mut query: Query<(&PlayerCar, &mut Transform)>,
-) {
+pub fn update_player_car_position(mut query: Query<(&PlayerCar, &mut Transform)>) {
     for (player_car, mut transform) in query.iter_mut() {
         let mid_line = calculate_midline();
         let line_offset_from_middle = player_car.current_line - mid_line;

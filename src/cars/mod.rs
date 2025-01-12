@@ -1,4 +1,4 @@
-use crate::cars::systems::{move_player_car, setup_background, setup_game_state, setup_player, update_player_car_position};
+use crate::cars::systems::{move_player_car, setup_road, setup_game_state, setup_player, update_player_car_position};
 use crate::systems::{quit_game, setup_camera};
 use bevy::app::{App, Startup, Update};
 use bevy::input::common_conditions::input_just_pressed;
@@ -25,7 +25,7 @@ pub fn launch_cars() {
             (
                 setup_camera,
                 setup_player,
-                setup_background,
+                setup_road,
                 setup_game_state,
             ),
         )
