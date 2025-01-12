@@ -1,5 +1,4 @@
 use bevy::app::{App, Startup, Update};
-use bevy::asset::AssetServer;
 use bevy::DefaultPlugins;
 use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::{Component, IntoSystemConfigs, KeyCode, MonitorSelection, PluginGroup, Window, WindowPlugin};
@@ -23,7 +22,7 @@ pub fn launch_cars() {
         .add_systems(Startup, (setup_camera, setup))
         .add_systems(
             Update,
-            (quit_game.run_if(input_just_pressed(KeyCode::Escape))),
+            quit_game.run_if(input_just_pressed(KeyCode::Escape)),
         )
         .run();
 }

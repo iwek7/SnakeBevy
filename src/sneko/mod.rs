@@ -1,10 +1,8 @@
-use std::ops::Div;
 use bevy::app::{App, Startup, Update};
 use bevy::DefaultPlugins;
 use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
 use bevy::window::WindowMode;
-use rand::Rng;
 use crate::sneko::components::GameLostEvent;
 use crate::sneko::systems::*;
 use crate::systems::{quit_game, setup_camera};

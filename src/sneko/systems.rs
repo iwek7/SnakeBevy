@@ -61,9 +61,9 @@ pub fn setup_snake(
 }
 
 pub fn actually_setup_snake(
-    mut commands: &mut Commands,
-    mut meshes: &mut ResMut<Assets<Mesh>>,
-    mut materials: &mut ResMut<Assets<ColorMaterial>>,
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
 ) {
     // spawning snake
     spawn_snake_segment(commands, meshes, materials, vec2(0.0, 0.0), 0);
@@ -85,9 +85,9 @@ pub fn actually_setup_snake(
 
 pub fn spawn_snake_segment(
     // todo meshes and materials need to go
-    mut commands: &mut Commands,
-    mut meshes: &mut ResMut<Assets<Mesh>>,
-    mut materials: &mut ResMut<Assets<ColorMaterial>>,
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
     position: Vec2,
     index: i32,
 ) {

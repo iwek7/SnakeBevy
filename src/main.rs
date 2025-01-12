@@ -2,18 +2,21 @@ mod cars;
 mod sneko;
 mod systems;
 
-use bevy::ecs::query::{QueryData, QueryFilter, WorldQuery};
-
-use std::cmp::PartialEq;
 use std::env;
-use std::ops::Div;
-
-use bevy::prelude::*;
-use rand::Rng;
 
 // example command `cargo run sneko`
 fn main() {
     let args: Vec<String> = env::args().collect();
+    if args.len() == 1 {
+        println!("Please specify a game name");
+        return;
+    }
+
+    if args.len() > 2 {
+        println!("Too many args, just specify a game name");
+        return;
+    }
+
     let game_name = &args[1];
     println!("Lounching game {}", game_name);
     match game_name.as_str() {
