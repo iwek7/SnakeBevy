@@ -3,7 +3,7 @@ use bevy::DefaultPlugins;
 use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::{Component, IntoSystemConfigs, KeyCode, MonitorSelection, PluginGroup, Window, WindowPlugin};
 use bevy::window::WindowMode;
-use crate::cars::systems::setup;
+use crate::cars::systems::{setup_player, setup_background};
 use crate::systems::{quit_game, setup_camera};
 pub mod cars;
 mod systems;
@@ -19,7 +19,7 @@ pub fn launch_cars() {
             }),
             ..Default::default()
         }))
-        .add_systems(Startup, (setup_camera, setup))
+        .add_systems(Startup, (setup_camera, setup_player, setup_background))
         .add_systems(
             Update,
             quit_game.run_if(input_just_pressed(KeyCode::Escape)),
