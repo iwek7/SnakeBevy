@@ -40,7 +40,7 @@ pub fn setup_road(
 
     let mut already_drawn_stripe_lines = 0;
     for stripe_line_idx in 0..NUMBER_OF_TRACKS - 1 {
-        let mut current_x = -TRACK_SHOWN_LENGTH / 2.;
+        let mut current_x = -TRACK_SHOWN_LENGTH / 2. + STRIPE_SIZE.x / 2. + STRIPE_GAP;
         let line_under_stripe_offset = -total_height / 2. + stripe_line_idx as f32 * TRACK_WIDTH + already_drawn_stripe_lines as f32 * STRIPE_SIZE.y + TRACK_WIDTH;
         println!("{}", line_under_stripe_offset);
         let stripe_y = line_under_stripe_offset;
