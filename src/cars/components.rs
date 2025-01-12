@@ -22,6 +22,15 @@ impl PlayerCar {
     }
 }
 
+#[derive(Component)]
+pub struct EnemyCar {}
+
+impl EnemyCar {
+    pub fn new() -> Self {
+        Self { }
+    }
+}
+
 #[derive(Resource)]
 pub struct GameState {}
 
