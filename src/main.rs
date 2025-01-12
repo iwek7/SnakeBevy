@@ -10,6 +10,6 @@ use std::ops::Div;
 use bevy::prelude::*;
 use rand::Rng;
 fn main() {
-    sneko::lounch_snake();
-    // cars::launch_cars();
+    // sneko::lounch_snake();
+    cars::launch_cars();
 }

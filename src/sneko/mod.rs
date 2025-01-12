@@ -24,7 +24,7 @@ pub(crate) fn lounch_snake()  {
         ..Default::default()
     }))
         .add_event::<GameLostEvent>()
-        .add_systems(Startup, (setup_game, setup_camera, setup_snake))
+        .add_systems(Startup, (setup_game, setup_camera, setup_snake, setup_background))
         .add_systems(
             Update,
             (

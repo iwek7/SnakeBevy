@@ -1,18 +1,23 @@
-use std::ops::Div;
+use crate::sneko::components::Direction::{DOWN, LEFT, RIGHT, UP};
+use crate::sneko::components::{
+    DespawnOnLoss, Direction, Food, FoodBundle, GameLostEvent, GlobalGameState, SnakeSegment,
+    SnakeSegmentBundle,
+};
+use crate::sneko::config::*;
 use bevy::asset::Assets;
 use bevy::math::{vec2, Vec2};
-use bevy::prelude::{Circle, ColorMaterial, Commands, DespawnRecursiveExt, Entity, EventReader, EventWriter, Mesh, Mesh2d, MeshMaterial2d, Query, Rectangle, Res, ResMut, Time, Transform, With, Without};
+use bevy::prelude::{
+    Circle, ColorMaterial, Commands, DespawnRecursiveExt, Entity, EventReader, EventWriter, Mesh,
+    Mesh2d, MeshMaterial2d, Query, Rectangle, Res, ResMut, Time, Transform, With, Without,
+};
 use rand::Rng;
-use crate::sneko::components::{DespawnOnLoss, Direction, Food, FoodBundle, GameLostEvent, GlobalGameState, SnakeSegment, SnakeSegmentBundle};
-use crate::sneko::components::Direction::{DOWN, LEFT, RIGHT, UP};
-use crate::sneko::config::*;
+use std::ops::Div;
 
-pub fn setup_game(
+pub fn setup_background(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    // spawning background
     let shape_mesh = meshes.add(Rectangle::new(
         GRID_SIZE[0] as f32 * CELL_SIZE,
         GRID_SIZE[1] as f32 * CELL_SIZE,
@@ -23,7 +28,13 @@ pub fn setup_game(
         MeshMaterial2d(materials.add(BACKGROUND_COLOR)),
         Transform::from_xyz(0.0, 0.0, BACKGROUND_Z),
     ));
+}
 
+pub fn setup_game(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     let dot_mesh = meshes.add(Circle::new(DOT_RADIUS));
     // dots
     for row in 0..GRID_SIZE[0] {
@@ -245,7 +256,7 @@ pub fn move_snecko(
                             .collect::<Vec<_>>(),
                         Some(food_transform.translation.truncate()),
                     )
-                        .unwrap();
+                    .unwrap();
                     food_transform.translation.x = new_food_position.x;
                     food_transform.translation.y = new_food_position.y;
                 }
