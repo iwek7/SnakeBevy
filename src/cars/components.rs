@@ -1,7 +1,7 @@
-use std::cmp::{max, min};
-use bevy::prelude::*;
-use crate::cars::config::NUMBER_OF_LINES;
+use crate::cars::config::{NUMBER_OF_LINES, SPAWN_TIMEOUT};
 use crate::cars::systems::calculate_midline;
+use bevy::prelude::*;
+use std::cmp::{max, min};
 
 #[derive(Component)]
 pub struct PlayerCar {
@@ -10,7 +10,9 @@ pub struct PlayerCar {
 
 impl PlayerCar {
     pub fn new() -> Self {
-        Self { current_line: calculate_midline() }
+        Self {
+            current_line: calculate_midline(),
+        }
     }
 
     pub fn try_move_up(&mut self) {
@@ -27,7 +29,7 @@ pub struct EnemyCar {}
 
 impl EnemyCar {
     pub fn new() -> Self {
-        Self { }
+        Self {}
     }
 }
 
@@ -37,5 +39,18 @@ pub struct GameState {}
 impl GameState {
     pub fn new() -> Self {
         Self {}
+    }
+}
+
+#[derive(Resource)]
+pub struct EnemySpawnTimer {
+    pub timer: Timer,
+}
+
+impl EnemySpawnTimer {
+    pub fn new() -> Self {
+        Self {
+            timer: Timer::new(SPAWN_TIMEOUT, TimerMode::Repeating),
+        }
     }
 }

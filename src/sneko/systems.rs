@@ -196,7 +196,7 @@ pub fn move_snecko(
     mut game_lost_ev_writer: EventWriter<GameLostEvent>,
 ) {
     global_state.move_timer.tick(time.delta());
-    if global_state.move_timer.finished() {
+    if global_state.move_timer.finished() { 
         let mut snake_segments_vec = snake_segments_q.iter_mut().collect::<Vec<_>>();
         // sorted from the back of the snecko
         snake_segments_vec.sort_by_key(|(_, segment)| -segment.index);

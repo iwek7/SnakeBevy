@@ -1,3 +1,4 @@
+use std::time::Duration;
 use bevy::color::Color;
 use bevy::prelude::{vec2, Vec2};
 
@@ -20,3 +21,5 @@ pub const CAR_SIZE: Vec2 = vec2(400., 200.);
 
 
 pub const ENEMY_CAR_SPEED: f32 = 4.;
+
+pub const SPAWN_TIMEOUT: Duration = Duration::from_millis(3000);

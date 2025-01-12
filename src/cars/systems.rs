@@ -1,4 +1,4 @@
-use crate::cars::components::{EnemyCar, GameState, PlayerCar};
+use crate::cars::components::{EnemyCar, EnemySpawnTimer, GameState, PlayerCar};
 use crate::cars::config::*;
 use bevy::asset::{AssetServer, Assets};
 use bevy::prelude::*;
@@ -22,7 +22,12 @@ pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 }
 
-pub fn spawn_enemy_car(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup_enemy(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.insert_resource(EnemySpawnTimer::new());
+    spawn_enemy_car(&mut commands, asset_server);
+}
+
+fn spawn_enemy_car(commands: &mut Commands, asset_server: Res<AssetServer>) {
     let spawn_line = rand::thread_rng().gen_range(0..NUMBER_OF_LINES);
     let y = car_at_line_y_position(spawn_line);
     let texture_left = asset_server.load("cars/redCar/redCar.png");
@@ -76,6 +81,19 @@ pub fn setup_road(
     }
 }
 
+pub fn try_spawning_enemy(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut timer: ResMut<EnemySpawnTimer>,
+    time: Res<Time>,
+) {
+    timer.timer.tick(time.delta());
+    if timer.timer.finished() {
+        spawn_enemy_car(&mut commands, asset_server);
+        timer.timer.reset()
+    }
+}
+
 pub fn move_player_car(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut query: Query<&mut PlayerCar>,
@@ -108,7 +126,7 @@ pub fn move_enemy_cars(mut query: Query<&mut Transform, With<EnemyCar>>) {
 }
 
 pub fn despawn_enemy_cars(
-    mut query: Query<(Entity, &Transform), With<EnemyCar>>,
+    query: Query<(Entity, &Transform), With<EnemyCar>>,
     mut commands: Commands,
 ) {
     for (entity, transform) in query.iter() {
