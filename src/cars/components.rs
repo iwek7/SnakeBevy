@@ -25,11 +25,13 @@ impl PlayerCar {
 }
 
 #[derive(Component)]
-pub struct EnemyCar {}
+pub struct EnemyCar {
+    pub current_line: i32,
+}
 
 impl EnemyCar {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(current_line: i32) -> Self {
+        Self { current_line }
     }
 }
 
@@ -52,5 +54,14 @@ impl EnemySpawnTimer {
         Self {
             timer: Timer::new(SPAWN_TIMEOUT, TimerMode::Repeating),
         }
+    }
+}
+
+#[derive(Event)]
+pub struct GameLostEvent {}
+
+impl GameLostEvent {
+    pub fn new() -> Self {
+        Self {}
     }
 }

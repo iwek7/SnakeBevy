@@ -1,4 +1,4 @@
-use crate::cars::components::{EnemyCar, EnemySpawnTimer, GameState, PlayerCar};
+use crate::cars::components::{EnemyCar, EnemySpawnTimer, GameLostEvent, GameState, PlayerCar};
 use crate::cars::config::*;
 use bevy::asset::{AssetServer, Assets};
 use bevy::color::palettes::css::GREEN;
@@ -33,7 +33,7 @@ fn spawn_enemy_car(commands: &mut Commands, asset_server: Res<AssetServer>) {
     let y = car_at_line_y_position(spawn_line);
     let texture_left = asset_server.load("cars/redCar/redCar.png");
     commands.spawn((
-        EnemyCar::new(),
+        EnemyCar::new(spawn_line),
         Transform::from_xyz(400.0, y, CAR_Z),
         Sprite {
             image: texture_left,
@@ -164,5 +164,30 @@ pub fn draw_gizmos(
             CAR_SIZE,
             GREEN,
         );
+    }
+}
+
+pub fn check_player_collission(
+    player_query: Query<(&PlayerCar, &Transform), With<PlayerCar>>,
+    enemies_query: Query<(&EnemyCar, &Transform), With<EnemyCar>>,
+    mut lost_game_ew: EventWriter<GameLostEvent>,
+) {
+    let (player_car, player_transform) = player_query.single();
+    // obviously we can do it simply with comparing only transform and without line, but w/e for now
+    for (enemy_car, enemy_transform) in enemies_query.iter() {
+        if player_car.current_line == enemy_car.current_line {
+            if player_transform.translation.x < enemy_transform.translation.x + CAR_SIZE.x
+                && player_transform.translation.x + CAR_SIZE.x > enemy_transform.translation.x
+            {
+               lost_game_ew.send(GameLostEvent::new());
+                return;
+            }
+        }
+    }
+}
+
+pub fn handle_game_lost_event(mut game_lost_er: EventReader<GameLostEvent>) {
+    for _ in game_lost_er.read() {
+      println!("LOSING!!!! {}", rand::random::<i32>());   
     }
 }
