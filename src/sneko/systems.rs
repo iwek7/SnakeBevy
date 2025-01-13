@@ -6,12 +6,10 @@ use crate::sneko::components::{
 use crate::sneko::config::*;
 use bevy::asset::Assets;
 use bevy::math::{vec2, Vec2};
-use bevy::prelude::{
-    Circle, ColorMaterial, Commands, DespawnRecursiveExt, Entity, EventReader, EventWriter, Mesh,
-    Mesh2d, MeshMaterial2d, Query, Rectangle, Res, ResMut, Time, Transform, With, Without,
-};
+use bevy::prelude::{Circle, ColorMaterial, Commands, DespawnRecursiveExt, Entity, EventReader, EventWriter, KeyCode, Mesh, Mesh2d, MeshMaterial2d, Query, Rectangle, Res, ResMut, Time, Transform, With, Without};
 use rand::Rng;
 use std::ops::Div;
+use bevy::input::ButtonInput;
 
 pub fn setup_background(
     mut commands: Commands,
@@ -290,28 +288,19 @@ pub fn handle_game_lost(
     }
 }
 
-// todo: those separate methods are overkill
-// todo: dont prevent turning around in opposite direction if snake is head only
-pub fn handle_turn_up(mut global_game_state: ResMut<GlobalGameState>) {
-    if global_game_state.direction != DOWN {
+pub fn handle_turning(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    segments: Query<Entity, With<SnakeSegment>>,
+    mut global_game_state: ResMut<GlobalGameState>
+) {
+    let num_segments = segments.iter().count();
+    if keyboard_input.just_pressed(KeyCode::ArrowUp) && (num_segments == 1 || global_game_state.direction != DOWN) {
         global_game_state.direction = UP;
-    }
-}
-
-pub fn handle_turn_down(mut global_game_state: ResMut<GlobalGameState>) {
-    if global_game_state.direction != UP {
+    } else if keyboard_input.just_pressed(KeyCode::ArrowDown) && (num_segments == 1 || global_game_state.direction != UP) {
         global_game_state.direction = DOWN;
-    }
-}
-
-pub fn handle_turn_left(mut global_game_state: ResMut<GlobalGameState>) {
-    if global_game_state.direction != RIGHT {
+    } else if keyboard_input.just_pressed(KeyCode::ArrowLeft) && (num_segments == 1 || global_game_state.direction != RIGHT) {
         global_game_state.direction = LEFT;
-    }
-}
-
-pub fn handle_turn_right(mut global_game_state: ResMut<GlobalGameState>) {
-    if global_game_state.direction != LEFT {
+    } else if keyboard_input.just_pressed(KeyCode::ArrowRight) && (num_segments == 1 || global_game_state.direction != LEFT) {
         global_game_state.direction = RIGHT;
     }
 }

@@ -28,10 +28,7 @@ pub(crate) fn lounch_snake()  {
             (
                 // draw_gizmos,
                 move_snecko,
-                handle_turn_up.run_if(input_just_pressed(KeyCode::ArrowUp)),
-                handle_turn_down.run_if(input_just_pressed(KeyCode::ArrowDown)),
-                handle_turn_left.run_if(input_just_pressed(KeyCode::ArrowLeft)),
-                handle_turn_right.run_if(input_just_pressed(KeyCode::ArrowRight)),
+                handle_turning,
                 quit_game.run_if(input_just_pressed(KeyCode::Escape)),
                 handle_game_lost,
             ),
