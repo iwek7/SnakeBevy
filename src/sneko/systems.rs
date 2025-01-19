@@ -1,15 +1,12 @@
 use crate::sneko::components::Direction::{DOWN, LEFT, RIGHT, UP};
-use crate::sneko::components::{
-    DespawnOnLoss, Direction, Food, FoodBundle, GameLostEvent, GlobalGameState, SnakeSegment,
-    SnakeSegmentBundle,
-};
+use crate::sneko::components::*;
 use crate::sneko::config::*;
-use bevy::asset::Assets;
+use bevy::asset::{AssetServer, Assets};
+use bevy::input::ButtonInput;
 use bevy::math::{vec2, Vec2};
-use bevy::prelude::{Circle, ColorMaterial, Commands, DespawnRecursiveExt, Entity, EventReader, EventWriter, KeyCode, Mesh, Mesh2d, MeshMaterial2d, Query, Rectangle, Res, ResMut, Time, Transform, With, Without};
+use bevy::prelude::{default, Circle, ColorMaterial, Commands, DespawnRecursiveExt, Entity, EventReader, EventWriter, KeyCode, Mesh, Mesh2d, MeshMaterial2d, Query, Rectangle, Res, ResMut, Sprite, Time, Transform, With, Without};
 use rand::Rng;
 use std::ops::Div;
-use bevy::input::ButtonInput;
 
 pub fn setup_background(
     mut commands: Commands,
@@ -54,17 +51,19 @@ pub fn setup_snake(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>
 ) {
-    actually_setup_snake(&mut commands, &mut meshes, &mut materials);
+    actually_setup_snake(&mut commands, &mut meshes, &mut materials, &asset_server);
 }
 
 pub fn actually_setup_snake(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
+    asset_server: &Res<AssetServer>
 ) {
     // spawning snake
-    spawn_snake_segment(commands, meshes, materials, vec2(0.0, 0.0), 0);
+    spawn_snake_segment(commands, meshes, materials, vec2(0.0, 0.0), 0, asset_server);
 
     // spawn some food
     let food_mesh = Mesh2d(meshes.add(Circle::new(FOOD_RADIUS)));
@@ -88,6 +87,7 @@ pub fn spawn_snake_segment(
     materials: &mut ResMut<Assets<ColorMaterial>>,
     position: Vec2,
     index: i32,
+    asset_server: &Res<AssetServer>
 ) {
     let snake_mesh = Mesh2d(meshes.add(Rectangle::new(SNAKE_SIZE, SNAKE_SIZE)));
     let snake_material = MeshMaterial2d(materials.add(if index == 0 {
@@ -102,15 +102,30 @@ pub fn spawn_snake_segment(
         position.extend(SNAKE_Z)
     };
 
-    let snake = SnakeSegmentBundle::new(
+    commands.spawn((
         snake_mesh,
         snake_material,
-        snake_full_position,
+        Transform::from_xyz(snake_full_position.x, snake_full_position.y, snake_full_position.z),
         SnakeSegment::new(index, index),
-    );
-
-    commands.spawn(snake);
+        DespawnOnLoss::new(),
+    ));
 }
+
+
+//
+// pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
+//     let tx = asset_server.load("cars/blueCar/blueCar.png");
+//     commands.spawn((
+//         crate::cars::components::PlayerCar::new(),
+//         Transform::from_xyz(-800.0, 0.0, crate::cars::config::CAR_Z),
+//         Sprite {
+//             image: tx,
+//             flip_x: true,
+//             custom_size: Some(crate::cars::config::CAR_SIZE),
+//             ..default()
+//         },
+//     ));
+// }
 
 // when false is returned there is no more place to spawn food
 fn get_new_food_position(
@@ -192,9 +207,10 @@ pub fn move_snecko(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut game_lost_ev_writer: EventWriter<GameLostEvent>,
+    asset_server: Res<AssetServer>
 ) {
     global_state.move_timer.tick(time.delta());
-    if global_state.move_timer.finished() { 
+    if global_state.move_timer.finished() {
         let mut snake_segments_vec = snake_segments_q.iter_mut().collect::<Vec<_>>();
         // sorted from the back of the snecko
         snake_segments_vec.sort_by_key(|(_, segment)| -segment.index);
@@ -245,6 +261,7 @@ pub fn move_snecko(
                         &mut materials,
                         segment_transform.translation.truncate(),
                         snake_segments_vec.len() as i32,
+                        &asset_server
                     );
                     let new_food_position = get_new_food_position(
                         snake_segments_vec
@@ -291,16 +308,24 @@ pub fn handle_game_lost(
 pub fn handle_turning(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     segments: Query<Entity, With<SnakeSegment>>,
-    mut global_game_state: ResMut<GlobalGameState>
+    mut global_game_state: ResMut<GlobalGameState>,
 ) {
     let num_segments = segments.iter().count();
-    if keyboard_input.just_pressed(KeyCode::ArrowUp) && (num_segments == 1 || global_game_state.direction != DOWN) {
+    if keyboard_input.just_pressed(KeyCode::ArrowUp)
+        && (num_segments == 1 || global_game_state.direction != DOWN)
+    {
         global_game_state.direction = UP;
-    } else if keyboard_input.just_pressed(KeyCode::ArrowDown) && (num_segments == 1 || global_game_state.direction != UP) {
+    } else if keyboard_input.just_pressed(KeyCode::ArrowDown)
+        && (num_segments == 1 || global_game_state.direction != UP)
+    {
         global_game_state.direction = DOWN;
-    } else if keyboard_input.just_pressed(KeyCode::ArrowLeft) && (num_segments == 1 || global_game_state.direction != RIGHT) {
+    } else if keyboard_input.just_pressed(KeyCode::ArrowLeft)
+        && (num_segments == 1 || global_game_state.direction != RIGHT)
+    {
         global_game_state.direction = LEFT;
-    } else if keyboard_input.just_pressed(KeyCode::ArrowRight) && (num_segments == 1 || global_game_state.direction != LEFT) {
+    } else if keyboard_input.just_pressed(KeyCode::ArrowRight)
+        && (num_segments == 1 || global_game_state.direction != LEFT)
+    {
         global_game_state.direction = RIGHT;
     }
 }

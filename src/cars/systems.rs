@@ -10,12 +10,12 @@ pub fn setup_game_state(mut commands: Commands) {
 }
 
 pub fn setup_player(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let texture_left = asset_server.load("cars/blueCar/blueCar.png");
+    let tx = asset_server.load("cars/blueCar/blueCar.png");
     commands.spawn((
         PlayerCar::new(),
         Transform::from_xyz(-800.0, 0.0, CAR_Z),
         Sprite {
-            image: texture_left,
+            image: tx,
             flip_x: true,
             custom_size: Some(CAR_SIZE),
             ..default()

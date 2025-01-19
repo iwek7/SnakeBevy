@@ -38,31 +38,6 @@ impl SnakeSegment {
         Self { index, move_delay }
     }
 }
-#[derive(Bundle)]
-pub struct SnakeSegmentBundle {
-    snake_segment: SnakeSegment,
-    mesh: Mesh2d,
-    transform: Transform,
-    material: MeshMaterial2d<ColorMaterial>,
-    despawn_on_loss: DespawnOnLoss
-}
-
-impl SnakeSegmentBundle {
-    pub fn new(
-        mesh: Mesh2d,
-        material: MeshMaterial2d<ColorMaterial>,
-        segment_pos: Vec3,
-        snake_segment: SnakeSegment,
-    ) -> SnakeSegmentBundle {
-        SnakeSegmentBundle {
-            snake_segment,
-            mesh,
-            material,
-            transform: Transform::from_xyz(segment_pos.x, segment_pos.y, segment_pos.z),
-            despawn_on_loss: DespawnOnLoss::new()
-        }
-    }
-}
 
 #[derive(Component)]
 pub struct Food {}
@@ -106,7 +81,7 @@ impl GameLostEvent {
 pub struct DespawnOnLoss {}
 
 impl DespawnOnLoss {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {}
     }
 }
