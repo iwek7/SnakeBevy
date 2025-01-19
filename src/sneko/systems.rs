@@ -4,7 +4,7 @@ use crate::sneko::config::*;
 use bevy::asset::{AssetServer, Assets};
 use bevy::input::ButtonInput;
 use bevy::math::{vec2, Vec2};
-use bevy::prelude::{Circle, ColorMaterial, Commands, Entity, EventReader, EventWriter, KeyCode, Mesh, Mesh2d, MeshMaterial2d, Query, Rectangle, Res, ResMut, Sprite, Time, Transform, With, Without};
+use bevy::prelude::{default, Circle, ColorMaterial, Commands, Entity, EventReader, EventWriter, KeyCode, Mesh, Mesh2d, MeshMaterial2d, Query, Rectangle, Res, ResMut, Sprite, Time, Transform, With, Without};
 use rand::Rng;
 use std::ops::Div;
 
@@ -89,26 +89,35 @@ pub fn spawn_snake_segment(
     index: i32,
     asset_server: &Res<AssetServer>
 ) {
-    let snake_mesh = Mesh2d(meshes.add(Rectangle::new(SNAKE_SIZE, SNAKE_SIZE)));
-    let snake_material = MeshMaterial2d(materials.add(if index == 0 {
-        SNAKE_HEAD_COLOR
+    if index == 0 {
+        let tx = asset_server.load("sneko/head.png");
+        let snake_full_position =  position.extend(SNAKE_HEAD_Z);
+        commands.spawn((
+            DespawnOnLoss::new(),
+            SnakeSegment::new(index, index),
+            Transform::from_xyz(position.x, position.y, SNAKE_HEAD_Z),
+            Sprite {
+                image: tx,
+                flip_x: true,
+                custom_size: Some(vec2(SNAKE_SIZE, SNAKE_SIZE)),
+                ..default()
+            },
+        ));
     } else {
-        SNAKE_COLOR
-    }));
+        let snake_mesh = Mesh2d(meshes.add(Rectangle::new(SNAKE_SIZE, SNAKE_SIZE)));
+        let snake_material = MeshMaterial2d(materials.add(SNAKE_COLOR));
+        let snake_full_position =  position.extend(SNAKE_Z);
+        commands.spawn((
+            snake_mesh,
+            snake_material,
+            Transform::from_xyz(position.x, position.y, SNAKE_Z),
+            SnakeSegment::new(index, index),
+            DespawnOnLoss::new(),
+        ));
+    }
 
-    let snake_full_position = if index == 0 {
-        position.extend(SNAKE_HEAD_Z)
-    } else {
-        position.extend(SNAKE_Z)
-    };
 
-    commands.spawn((
-        snake_mesh,
-        snake_material,
-        Transform::from_xyz(snake_full_position.x, snake_full_position.y, snake_full_position.z),
-        SnakeSegment::new(index, index),
-        DespawnOnLoss::new(),
-    ));
+
 }
 
 
