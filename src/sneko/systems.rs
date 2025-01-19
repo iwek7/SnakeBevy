@@ -4,7 +4,7 @@ use crate::sneko::config::*;
 use bevy::asset::{AssetServer, Assets};
 use bevy::input::ButtonInput;
 use bevy::math::{vec2, Vec2};
-use bevy::prelude::{default, Circle, ColorMaterial, Commands, DespawnRecursiveExt, Entity, EventReader, EventWriter, KeyCode, Mesh, Mesh2d, MeshMaterial2d, Query, Rectangle, Res, ResMut, Sprite, Time, Transform, With, Without};
+use bevy::prelude::{Circle, ColorMaterial, Commands, Entity, EventReader, EventWriter, KeyCode, Mesh, Mesh2d, MeshMaterial2d, Query, Rectangle, Res, ResMut, Sprite, Time, Transform, With, Without};
 use rand::Rng;
 use std::ops::Div;
 
@@ -296,12 +296,13 @@ pub fn handle_game_lost(
     query: Query<Entity, With<DespawnOnLoss>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>
 ) {
     for _ in event_reader.read() {
         for e in query.iter() {
-            commands.entity(e).despawn_recursive();
+            commands.entity(e).despawn();
         }
-        actually_setup_snake(&mut commands, &mut meshes, &mut materials);
+        actually_setup_snake(&mut commands, &mut meshes, &mut materials, &asset_server);
     }
 }
 

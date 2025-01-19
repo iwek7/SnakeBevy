@@ -12,7 +12,7 @@ mod components;
 mod config;
 mod systems;
 
-pub(crate) fn lounch_snake()  {
+pub(crate) fn launch_snake()  {
     App::new().add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             resolution: bevy::window::WindowResolution::new(1920.0, 1080.0), // Set your desired resolution
@@ -27,7 +27,7 @@ pub(crate) fn lounch_snake()  {
             Update,
             (
                 // draw_gizmos,
-                move_snecko,
+                move_snecko.after(handle_turning),
                 handle_turning,
                 quit_game.run_if(input_just_pressed(KeyCode::Escape)),
                 handle_game_lost,

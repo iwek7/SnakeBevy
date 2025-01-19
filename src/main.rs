@@ -20,14 +20,14 @@ fn main() {
     let game_name = &args[1];
     println!("Launching game {}", game_name);
     match game_name.as_str() {
-        "sneko" => sneko::lounch_snake(),
+        "sneko" => sneko::launch_snake(),
         "cars" => cars::launch_cars(),
         _ => {
             println!("This game does not exist");
         }
     }
     if game_name == "sneko" {
-        sneko::lounch_snake();
+        sneko::launch_snake();
     } else {
     }
     //

@@ -316,7 +316,6 @@ dependencies = [
  "bevy_color",
  "bevy_derive",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_log",
  "bevy_math",
  "bevy_reflect",
@@ -412,7 +411,6 @@ dependencies = [
  "bevy_asset",
  "bevy_derive",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_math",
  "bevy_reflect",
  "bevy_transform",
@@ -586,7 +584,6 @@ dependencies = [
  "bevy_color",
  "bevy_core_pipeline",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_image",
  "bevy_math",
  "bevy_pbr",
@@ -603,19 +600,6 @@ dependencies = [
  "smallvec",
  "thiserror 2.0.9",
  "tracing",
-]
-
-[[package]]
-name = "bevy_hierarchy"
-version = "0.16.0-dev"
-dependencies = [
- "bevy_app",
- "bevy_ecs",
- "bevy_reflect",
- "bevy_utils",
- "disqualified",
- "log",
- "smallvec",
 ]
 
 [[package]]
@@ -664,7 +648,6 @@ version = "0.16.0-dev"
 dependencies = [
  "bevy_app",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_input",
  "bevy_math",
  "bevy_reflect",
@@ -690,7 +673,6 @@ dependencies = [
  "bevy_gilrs",
  "bevy_gizmos",
  "bevy_gltf",
- "bevy_hierarchy",
  "bevy_image",
  "bevy_input",
  "bevy_input_focus",
@@ -822,7 +804,6 @@ dependencies = [
  "bevy_asset",
  "bevy_derive",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_input",
  "bevy_math",
  "bevy_mesh",
@@ -888,7 +869,6 @@ dependencies = [
  "bevy_diagnostic",
  "bevy_ecs",
  "bevy_encase_derive",
- "bevy_hierarchy",
  "bevy_image",
  "bevy_math",
  "bevy_mesh",
@@ -941,7 +921,6 @@ dependencies = [
  "bevy_asset",
  "bevy_derive",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_reflect",
  "bevy_render",
  "bevy_transform",
@@ -985,7 +964,6 @@ version = "0.16.0-dev"
 dependencies = [
  "bevy_app",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_reflect",
  "bevy_state_macros",
  "bevy_utils",
@@ -1030,7 +1008,6 @@ dependencies = [
  "bevy_color",
  "bevy_derive",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_image",
  "bevy_math",
  "bevy_reflect",
@@ -1066,7 +1043,6 @@ version = "0.16.0-dev"
 dependencies = [
  "bevy_app",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_math",
  "bevy_reflect",
  "derive_more",
@@ -1086,7 +1062,6 @@ dependencies = [
  "bevy_core_pipeline",
  "bevy_derive",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_image",
  "bevy_input",
  "bevy_math",
@@ -1148,7 +1123,6 @@ dependencies = [
  "bevy_asset",
  "bevy_derive",
  "bevy_ecs",
- "bevy_hierarchy",
  "bevy_image",
  "bevy_input",
  "bevy_input_focus",
